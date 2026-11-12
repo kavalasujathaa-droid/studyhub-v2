@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}First-Time Platform Owner Setup - StudyHub V2{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-7 col-lg-6">
+            <div class="card sh-card shadow-lg p-4 border-primary">
+                <div class="text-center mb-4">
+                    <div class="sh-stat-icon bg-warning text-dark mx-auto mb-3 shadow">
+                        <i class="bi bi-shield-lock-fill fs-3"></i>
+                    </div>
+                    <h3 class="fw-bold">Platform Owner Setup</h3>
+                    <p class="text-muted small">Initial installation and system bootstrap for StudyHub V2</p>
+                    <div class="alert alert-warning py-2 small text-start">
+                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                        This one-time bootstrap procedure initializes the root Platform Owner. Enter the bootstrap token configured in your deployment environment.
+                    </div>
+                </div>
+
+                <form method="POST" action="{{ url_for('auth.setup') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Owner Bootstrap Token (OWNER_BOOTSTRAP_TOKEN)</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
+                            <input type="password" name="bootstrap_token" class="form-control" placeholder="Enter setup token" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Platform Owner Full Name</label>
+                        <input type="text" name="full_name" class="form-control" placeholder="e.g. Master Administrator" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-semibold">Username</label>
+                            <input type="text" name="username" class="form-control" placeholder="root_admin" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-semibold">Email Address</label>
+                            <input type="email" name="email" class="form-control" placeholder="owner@studyhub.internal" required>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-semibold">Master Password (min 10 chars)</label>
+                            <input type="password" name="password" class="form-control" placeholder="••••••••••" required minlength="10">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-semibold">Confirm Password</label>
+                            <input type="password" name="confirm_password" class="form-control" placeholder="••••••••••" required minlength="10">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm mt-3">
+                        <i class="bi bi-check2-circle me-1"></i> Initialize Platform Owner & Lock Setup
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

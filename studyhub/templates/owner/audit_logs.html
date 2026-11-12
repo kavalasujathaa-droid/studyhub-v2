@@ -1,0 +1,47 @@
+{% extends "owner/layout.html" %}
+
+{% block title %}Platform Audit Logs - StudyHub V2{% endblock %}
+
+{% block owner_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Platform Audit Trail</h3>
+        <p class="text-muted small mb-0">Security, provisioning, and administrative events</p>
+    </div>
+</div>
+
+<div class="card sh-card shadow-sm p-3">
+    <div class="table-responsive">
+        <table class="table table-hover table-striped align-middle mb-0 small">
+            <thead class="table-light">
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Action</th>
+                    <th>Target Type</th>
+                    <th>Description</th>
+                    <th>IP Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in logs %}
+                <tr>
+                    <td class="text-nowrap">{{ log.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td>
+                        <span class="badge bg-primary-subtle text-primary-emphasis">
+                            {{ log.action }}
+                        </span>
+                    </td>
+                    <td><code>{{ log.target_type or 'global' }}</code></td>
+                    <td>{{ log.description }}</td>
+                    <td><code>{{ log.ip_address or 'unknown' }}</code></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">No audit logs available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}413 - File Too Large{% endblock %}
+{% block body %}
+<div class="container py-5 text-center">
+    <div class="sh-stat-icon bg-warning text-dark mx-auto mb-3" style="width: 72px; height: 72px; font-size: 2rem;">
+        <i class="bi bi-file-earmark-x-fill"></i>
+    </div>
+    <h2 class="fw-bold">413 - File Exceeds 100 MB Limit</h2>
+    <p class="text-muted">The uploaded file exceeds the strict maximum limit of 100 MB.</p>
+    <a href="/admin/upload" class="btn btn-primary rounded-pill px-4 mt-2">Back to Upload</a>
+</div>
+{% endblock %}

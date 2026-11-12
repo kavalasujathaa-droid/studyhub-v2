@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}Sign In - StudyHub V2{% endblock %}
+
+{% block body %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-4">
+            <div class="card sh-card shadow-lg p-4">
+                <div class="text-center mb-4">
+                    <div class="sh-stat-icon bg-primary text-white mx-auto mb-3 shadow">
+                        <i class="bi bi-mortarboard-fill fs-3"></i>
+                    </div>
+                    <h3 class="fw-bold">StudyHub <span class="text-primary">V2</span></h3>
+                    <p class="text-muted small">Multi-Tenant Educational Digital Library</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('auth.login') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Username or Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-person"></i></span>
+                            <input type="text" name="identifier" class="form-control" placeholder="Enter username or email" required autofocus>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="remember" class="form-check-input" id="rememberMe">
+                        <label class="form-check-label small" for="rememberMe">Remember me</label>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+                    </button>
+                </form>
+
+                <div class="text-center mt-4 border-top pt-3 text-muted small">
+                    <i class="bi bi-shield-check text-success me-1"></i> Strictly Isolated Multi-Tenant Architecture
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

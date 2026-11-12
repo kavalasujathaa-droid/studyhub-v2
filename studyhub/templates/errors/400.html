@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}400 - Bad Request{% endblock %}
+{% block body %}
+<div class="container py-5 text-center">
+    <div class="sh-stat-icon bg-warning text-dark mx-auto mb-3" style="width: 72px; height: 72px; font-size: 2rem;">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+    </div>
+    <h2 class="fw-bold">400 - Bad Request</h2>
+    <p class="text-muted">The server could not understand the request due to invalid syntax or parameters.</p>
+    <a href="/" class="btn btn-primary rounded-pill px-4 mt-2">Return Home</a>
+</div>
+{% endblock %}

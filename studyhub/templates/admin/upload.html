@@ -1,0 +1,110 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Upload PDF Material - StudyHub V2{% endblock %}
+
+{% block admin_content %}
+<div class="mb-4">
+    <h3 class="fw-bold mb-1">Upload PDF Document</h3>
+    <p class="text-muted small mb-0">Direct presigned browser upload to private Cloudflare R2 bucket</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card sh-card shadow-sm p-4">
+            <form id="pdfUploadForm">
+                <!-- 1. Hierarchy Selection -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Select Subject <span class="text-danger">*</span></label>
+                        <select class="form-select" id="uploadSubjectSelect" required>
+                            <option value="">-- Choose Subject --</option>
+                            {% for s in subjects %}
+                            <option value="{{ s.id }}">{{ s.subject_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-semibold">Select Title / Chapter <span class="text-danger">*</span></label>
+                        <select class="form-select" id="uploadTitleSelect" required disabled>
+                            <option value="">-- First Select a Subject --</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- 2. PDF Details -->
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">PDF Document Title <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="pdfTitleInput" placeholder="e.g. Chapter 1 Lecture Notes & Solved Problems" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Description</label>
+                    <textarea class="form-control" id="pdfDescriptionInput" rows="3" placeholder="Brief overview or key topics covered in this document..."></textarea>
+                </div>
+
+                <!-- 3. File Input -->
+                <div class="mb-4">
+                    <label class="form-label small fw-semibold">PDF File (Max 100 MB) <span class="text-danger">*</span></label>
+                    <div class="sh-dropzone" onclick="document.getElementById('pdfFileInput').click()">
+                        <i class="bi bi-file-earmark-pdf-fill fs-1 text-primary mb-2"></i>
+                        <h6 class="fw-bold">Click or drag & drop PDF here</h6>
+                        <p class="text-muted small mb-0">Strictly verified for PDF magic bytes (%PDF-). Max 100 MB.</p>
+                        <input type="file" id="pdfFileInput" accept="application/pdf,.pdf" class="d-none" required>
+                    </div>
+                </div>
+
+                <div class="mb-4 form-check">
+                    <input type="checkbox" class="form-check-input" id="pdfPublishedCheck" checked>
+                    <label class="form-check-label small fw-semibold" for="pdfPublishedCheck">
+                        Publish immediately to enrolled students
+                    </label>
+                </div>
+
+                <!-- 4. Progress Container -->
+                <div id="uploadProgressContainer" class="mb-4 d-none">
+                    <label class="form-label small fw-semibold d-flex justify-content-between">
+                        <span>Upload & Verification Progress</span>
+                        <span id="uploadStatusText" class="text-muted">Initializing...</span>
+                    </label>
+                    <div class="progress" style="height: 16px;">
+                        <div id="uploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%;"></div>
+                    </div>
+                </div>
+
+                <button type="submit" id="uploadSubmitBtn" class="btn btn-primary rounded-pill px-5 py-2 fw-semibold shadow-sm">
+                    <i class="bi bi-cloud-arrow-up-fill me-1"></i> Start Secure Upload
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Storage Usage & Guidelines -->
+    <div class="col-lg-4">
+        <div class="card sh-card shadow-sm p-4 mb-4">
+            <h6 class="fw-bold mb-3"><i class="bi bi-shield-check text-success me-2"></i>Storage Rules & Limits</h6>
+            <ul class="list-unstyled small text-muted mb-0">
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i><strong>Max File Size:</strong> 100 MB per single PDF.</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i><strong>Tenant Quota:</strong> 9 GiB safety ceiling.</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i><strong>Direct R2:</strong> Uploads bypass the Render web process directly into Cloudflare R2 object storage.</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i><strong>Integrity:</strong> Magic byte validation (%PDF-) & SHA256 checksum recorded.</li>
+            </ul>
+        </div>
+
+        <div class="card sh-card shadow-sm p-4">
+            <h6 class="fw-bold mb-2">Storage Status</h6>
+            <div class="d-flex justify-content-between small text-muted mb-1">
+                <span>Used: {{ stats.storage_used_mb }} MB</span>
+                <span>Max: 9,216 MB</span>
+            </div>
+            {% set pct = (stats.storage_used_mb / stats.storage_limit_mb * 100) | round(1) %}
+            <div class="progress" style="height: 8px;">
+                <div class="progress-bar bg-info" style="width: {{ pct }}%;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/upload.js') }}"></script>
+{% endblock %}

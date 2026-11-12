@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="d-flex">
+    <!-- Admin Sidebar -->
+    <div class="sh-sidebar p-3 d-none d-md-block shadow-sm">
+        <div class="mb-4 px-3">
+            <span class="text-uppercase small fw-bold text-muted" style="letter-spacing: 0.1em;">Institution Library</span>
+            <h6 class="fw-bold text-white mt-1 text-truncate">{{ current_user.tenant.tenant_name if current_user.tenant else 'Admin' }}</h6>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'admin.dashboard' %}active{% endif %}" href="{{ url_for('admin.dashboard') }}">
+                    <i class="bi bi-speedometer2"></i> Overview
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'admin.students' %}active{% endif %}" href="{{ url_for('admin.students') }}">
+                    <i class="bi bi-people"></i> Manage Students
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint in ['admin.subjects', 'admin.titles'] %}active{% endif %}" href="{{ url_for('admin.subjects') }}">
+                    <i class="bi bi-folder2-open"></i> Subjects & Titles
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'admin.upload' %}active{% endif %}" href="{{ url_for('admin.upload') }}">
+                    <i class="bi bi-cloud-arrow-up"></i> Upload PDF
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint in ['admin.materials', 'admin.material_versions'] %}active{% endif %}" href="{{ url_for('admin.materials') }}">
+                    <i class="bi bi-file-earmark-pdf"></i> PDF Materials
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'admin.storage' %}active{% endif %}" href="{{ url_for('admin.storage') }}">
+                    <i class="bi bi-pie-chart"></i> Storage Usage
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'admin.activity' %}active{% endif %}" href="{{ url_for('admin.activity') }}">
+                    <i class="bi bi-clock-history"></i> Activity History
+                </a>
+            </li>
+        </ul>
+        <div class="mt-auto px-3 pt-4 text-muted small border-top border-secondary-subtle">
+            <i class="bi bi-shield-check text-success me-1"></i> Isolated Tenant Mode
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="flex-grow-1 p-4">
+        {% block admin_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block body %}
+<div class="d-flex">
+    <!-- Platform Owner Sidebar -->
+    <div class="sh-sidebar p-3 d-none d-md-block shadow-sm">
+        <div class="mb-4 px-3">
+            <span class="text-uppercase small fw-bold text-muted" style="letter-spacing: 0.1em;">Platform Admin</span>
+            <h6 class="fw-bold text-white mt-1">Owner Console</h6>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'owner.dashboard' %}active{% endif %}" href="{{ url_for('owner.dashboard') }}">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'owner.admins' %}active{% endif %}" href="{{ url_for('owner.admins') }}">
+                    <i class="bi bi-person-badge"></i> Manage Admins
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'owner.tenants' %}active{% endif %}" href="{{ url_for('owner.tenants') }}">
+                    <i class="bi bi-building"></i> Tenants / Libraries
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'owner.audit_logs' %}active{% endif %}" href="{{ url_for('owner.audit_logs') }}">
+                    <i class="bi bi-journal-text"></i> Audit Logs
+                </a>
+            </li>
+        </ul>
+        <div class="mt-auto px-3 pt-5 text-muted small border-top border-secondary-subtle">
+            <i class="bi bi-lock-fill text-warning me-1"></i> Private academic data isolated by design.
+        </div>
+    </div>
+
+    <!-- Main Workspace -->
+    <div class="flex-grow-1 p-4">
+        {% block owner_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}

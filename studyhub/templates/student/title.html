@@ -1,0 +1,67 @@
+{% extends "student/layout.html" %}
+
+{% block title %}{{ title.title_name }} - {{ subject.subject_name }} - StudyHub V2{% endblock %}
+
+{% block student_content %}
+<!-- Breadcrumb Navigation -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('student.dashboard') }}"><i class="bi bi-house me-1"></i>Library</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('student.subject_detail', subject_id=subject.id) }}">{{ subject.subject_name }}</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ title.title_name }}</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">{{ title.title_name }}</h3>
+        <p class="text-muted small mb-0">{{ title.description or 'PDF documents under this title.' }}</p>
+    </div>
+    <a href="{{ url_for('student.subject_detail', subject_id=subject.id) }}" class="btn btn-outline-secondary rounded-pill px-3">
+        <i class="bi bi-arrow-left me-1"></i> Back to Titles
+    </a>
+</div>
+
+<div class="row g-4">
+    {% for m in materials %}
+    <div class="col-md-6 col-lg-4">
+        <div class="card sh-card p-3 shadow-sm h-100 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-file-earmark-pdf-fill text-danger fs-3"></i>
+                    <div>
+                        <h6 class="fw-bold mb-0 text-truncate" style="max-width: 200px;" title="{{ m.title }}">{{ m.title }}</h6>
+                        <span class="small text-muted">{{ m.file_size | filesizeformat }}</span>
+                    </div>
+                </div>
+
+                <!-- Bookmark Button -->
+                <button class="btn btn-sm btn-light rounded-circle p-1 btn-bookmark-toggle {% if m.id in bookmarked_ids %}active{% endif %}" data-pdf-id="{{ m.id }}" title="Bookmark PDF">
+                    <i class="bi {% if m.id in bookmarked_ids %}bi-bookmark-fill text-warning{% else %}bi-bookmark text-secondary{% endif %}"></i>
+                </button>
+            </div>
+
+            <p class="text-muted small mb-3 flex-grow-1">
+                {{ m.description or 'Lecture notes / reference material.' }}
+            </p>
+
+            <div class="border-top pt-3 mt-auto d-flex gap-2">
+                <a href="{{ url_for('student.view_pdf', pdf_id=m.id) }}" class="btn btn-primary btn-sm rounded-pill flex-grow-1">
+                    <i class="bi bi-eye me-1"></i> View Online
+                </a>
+                <a href="{{ url_for('student.download_pdf', pdf_id=m.id) }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3" title="Download PDF">
+                    <i class="bi bi-download"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5">
+        <i class="bi bi-file-earmark-x fs-1 text-muted mb-2"></i>
+        <h5 class="fw-bold">No Documents Found</h5>
+        <p class="text-muted small">No PDF materials have been published in this section yet.</p>
+        <a href="{{ url_for('student.subject_detail', subject_id=subject.id) }}" class="btn btn-primary rounded-pill px-4">Back to Subject</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

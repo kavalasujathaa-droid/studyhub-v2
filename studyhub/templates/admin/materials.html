@@ -1,0 +1,90 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}PDF Materials - StudyHub V2{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Uploaded PDF Materials</h3>
+        <p class="text-muted small mb-0">View, replace, publish, and manage version history of your library documents</p>
+    </div>
+    <a href="{{ url_for('admin.upload') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+        <i class="bi bi-cloud-arrow-up-fill me-1"></i> Upload New PDF
+    </a>
+</div>
+
+<div class="card sh-card shadow-sm p-3">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th>PDF Title</th>
+                    <th>Subject & Title</th>
+                    <th>File Size</th>
+                    <th>Downloads</th>
+                    <th>Status</th>
+                    <th>Uploaded</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in materials %}
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-file-earmark-pdf-fill text-danger fs-4"></i>
+                            <div>
+                                <span class="fw-semibold text-truncate d-inline-block" style="max-width: 250px;">{{ m.title }}</span>
+                                <div class="small text-muted">{{ m.original_filename }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="small fw-semibold">{{ m.subject.subject_name }}</div>
+                        <div class="small text-muted">{{ m.title_ref.title_name }}</div>
+                    </td>
+                    <td>{{ m.file_size | filesizeformat }}</td>
+                    <td>
+                        <span class="badge bg-secondary-subtle text-secondary-emphasis">
+                            <i class="bi bi-download me-1"></i>{{ m.download_count }}
+                        </span>
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin.toggle_publish_material', pdf_id=m.id) }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm {% if m.is_published %}btn-success{% else %}btn-outline-secondary{% endif %} rounded-pill px-2 py-0" title="Click to toggle publication">
+                                {{ 'Published' if m.is_published else 'Draft' }}
+                            </button>
+                        </form>
+                    </td>
+                    <td class="small text-muted">{{ m.created_at.strftime('%Y-%m-%d') }}</td>
+                    <td>
+                        <div class="d-flex gap-2">
+                            {% if m.versions %}
+                            <a href="{{ url_for('admin.material_versions', pdf_id=m.id) }}" class="btn btn-sm btn-outline-info rounded-pill" title="View Version History">
+                                <i class="bi bi-clock-history"></i> {{ m.versions | length }}
+                            </a>
+                            {% endif %}
+
+                            <!-- Delete Form -->
+                            <form method="POST" action="{{ url_for('admin.delete_material', pdf_id=m.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill" onclick="return confirm('Archive this PDF document?')">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">
+                        No PDF materials uploaded yet. Click "Upload New PDF" to add documents.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

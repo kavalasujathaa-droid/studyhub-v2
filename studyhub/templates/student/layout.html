@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block body %}
+<!-- Student Sub-Navbar with Search -->
+<div class="bg-body-tertiary border-bottom py-2">
+    <div class="container-fluid px-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <!-- Navigation Links -->
+        <ul class="nav nav-pills gap-1">
+            <li class="nav-item">
+                <a class="nav-link rounded-pill px-3 {% if request.endpoint == 'student.dashboard' %}active{% endif %}" href="{{ url_for('student.dashboard') }}">
+                    <i class="bi bi-grid-fill me-1"></i> Library Catalog
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link rounded-pill px-3 {% if request.endpoint == 'student.bookmarks' %}active{% endif %}" href="{{ url_for('student.bookmarks') }}">
+                    <i class="bi bi-bookmark-fill me-1"></i> Bookmarks
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link rounded-pill px-3 {% if request.endpoint == 'student.history' %}active{% endif %}" href="{{ url_for('student.history') }}">
+                    <i class="bi bi-clock-history me-1"></i> Recently Viewed
+                </a>
+            </li>
+        </ul>
+
+        <!-- Search Bar within Student's Tenant -->
+        <form class="d-flex" action="{{ url_for('student.search') }}" method="GET" style="max-width: 320px; width: 100%;">
+            <div class="input-group input-group-sm">
+                <input class="form-control rounded-start-pill" type="search" name="q" placeholder="Search textbooks, notes..." value="{{ request.args.get('q', '') }}" required>
+                <button class="btn btn-primary rounded-end-pill px-3" type="submit">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="container-fluid px-4 py-4">
+    {% block student_content %}{% endblock %}
+</div>
+{% endblock %}

@@ -1,0 +1,136 @@
+{% extends "owner/layout.html" %}
+
+{% block title %}Owner Dashboard - StudyHub V2{% endblock %}
+
+{% block owner_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Platform Overview</h3>
+        <p class="text-muted small mb-0">System-wide metrics and tenant management</p>
+    </div>
+    <a href="{{ url_for('owner.admins') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+        <i class="bi bi-plus-lg me-1"></i> Provision New Admin
+    </a>
+</div>
+
+<!-- Key Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3">
+        <div class="card sh-card p-3 shadow-sm">
+            <div class="d-flex align-items-center gap-3">
+                <div class="sh-stat-icon bg-primary-subtle text-primary">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div>
+                    <span class="text-muted small">Total Tenants</span>
+                    <h3 class="fw-bold mb-0">{{ stats.total_tenants }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card sh-card p-3 shadow-sm">
+            <div class="d-flex align-items-center gap-3">
+                <div class="sh-stat-icon bg-info-subtle text-info">
+                    <i class="bi bi-person-badge"></i>
+                </div>
+                <div>
+                    <span class="text-muted small">Administrators</span>
+                    <h3 class="fw-bold mb-0">{{ stats.total_admins }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card sh-card p-3 shadow-sm">
+            <div class="d-flex align-items-center gap-3">
+                <div class="sh-stat-icon bg-success-subtle text-success">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div>
+                    <span class="text-muted small">Total Students</span>
+                    <h3 class="fw-bold mb-0">{{ stats.total_students }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-xl-3">
+        <div class="card sh-card p-3 shadow-sm">
+            <div class="d-flex align-items-center gap-3">
+                <div class="sh-stat-icon bg-warning-subtle text-warning">
+                    <i class="bi bi-cloud-arrow-up"></i>
+                </div>
+                <div>
+                    <span class="text-muted small">Storage Utilized</span>
+                    <h3 class="fw-bold mb-0">{{ stats.total_storage_mb }} MB</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Recent Tenants Table -->
+    <div class="col-lg-7">
+        <div class="card sh-card shadow-sm p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">Registered Tenants</h5>
+                <a href="{{ url_for('owner.tenants') }}" class="small text-decoration-none">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tenant Name</th>
+                            <th>Slug</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in recent_tenants %}
+                        <tr>
+                            <td class="fw-semibold">{{ t.tenant_name }}</td>
+                            <td><code>{{ t.tenant_slug }}</code></td>
+                            <td>
+                                <span class="badge {% if t.status == 'active' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ t.status | title }}
+                                </span>
+                            </td>
+                            <td class="small text-muted">{{ t.created_at.strftime('%Y-%m-%d') }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">No tenants registered yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Platform Logs -->
+    <div class="col-lg-5">
+        <div class="card sh-card shadow-sm p-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0">Recent Activity Logs</h5>
+                <a href="{{ url_for('owner.audit_logs') }}" class="small text-decoration-none">Full Audit</a>
+            </div>
+            <ul class="list-group list-group-flush small">
+                {% for log in recent_logs %}
+                <li class="list-group-item px-0">
+                    <div class="d-flex justify-content-between">
+                        <strong>{{ log.action | replace('_', ' ') | title }}</strong>
+                        <span class="text-muted">{{ log.created_at.strftime('%H:%M') }}</span>
+                    </div>
+                    <div class="text-muted text-truncate">{{ log.description }}</div>
+                </li>
+                {% else %}
+                <li class="list-group-item text-center text-muted">No activity logs recorded.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

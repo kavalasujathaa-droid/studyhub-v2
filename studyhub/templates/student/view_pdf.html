@@ -1,0 +1,50 @@
+{% extends "student/layout.html" %}
+
+{% block title %}Viewing: {{ pdf.title }} - StudyHub V2{% endblock %}
+
+{% block student_content %}
+<!-- Breadcrumb Navigation -->
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('student.dashboard') }}"><i class="bi bi-house me-1"></i>Library</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('student.subject_detail', subject_id=subject.id) }}">{{ subject.subject_name }}</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('student.title_detail', title_id=title.id) }}">{{ title.title_name }}</a></li>
+        <li class="breadcrumb-item active text-truncate" style="max-width: 250px;">{{ pdf.title }}</li>
+    </ol>
+</nav>
+
+<div class="card sh-card shadow-sm p-3 mb-3">
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-file-earmark-pdf-fill text-danger fs-3"></i>
+            <div>
+                <h5 class="fw-bold mb-0">{{ pdf.title }}</h5>
+                <span class="small text-muted">{{ subject.subject_name }} &bull; {{ title.title_name }} &bull; {{ pdf.file_size | filesizeformat }}</span>
+            </div>
+        </div>
+
+        <div class="d-flex gap-2">
+            <!-- Bookmark Button -->
+            <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 btn-bookmark-toggle {% if is_bookmarked %}active{% endif %}" data-pdf-id="{{ pdf.id }}">
+                <i class="bi {% if is_bookmarked %}bi-bookmark-fill text-warning{% else %}bi-bookmark{% endif %} me-1"></i>
+                <span>Bookmark</span>
+            </button>
+
+            <!-- Download Button -->
+            <a href="{{ url_for('student.download_pdf', pdf_id=pdf.id) }}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                <i class="bi bi-download me-1"></i> Download
+            </a>
+
+            <!-- Open in New Tab -->
+            <a href="{{ pdf_url }}" target="_blank" class="btn btn-primary btn-sm rounded-pill px-3">
+                <i class="bi bi-box-arrow-up-right me-1"></i> Fullscreen
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Embedded PDF Iframe Viewer -->
+<div class="card sh-card shadow-sm p-1">
+    <iframe src="{{ pdf_url }}" class="pdf-viewer-frame" title="{{ pdf.title }}"></iframe>
+</div>
+{% endblock %}

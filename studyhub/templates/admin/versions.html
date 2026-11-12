@@ -1,0 +1,61 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Version History - {{ pdf.title }} - StudyHub V2{% endblock %}
+
+{% block admin_content %}
+<nav aria-label="breadcrumb" class="mb-3">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin.materials') }}"><i class="bi bi-file-earmark-pdf me-1"></i>Materials</a></li>
+        <li class="breadcrumb-item active">{{ pdf.title }} (Versions)</li>
+    </ol>
+</nav>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Version History</h3>
+        <p class="text-muted small mb-0">Document revisions and replaced versions for <strong>{{ pdf.title }}</strong></p>
+    </div>
+</div>
+
+<div class="card sh-card shadow-sm p-4 mb-4">
+    <h6 class="fw-bold text-primary mb-3">Current Active Version</h6>
+    <div class="row small">
+        <div class="col-md-3"><strong>Filename:</strong> {{ pdf.original_filename }}</div>
+        <div class="col-md-3"><strong>Size:</strong> {{ pdf.file_size | filesizeformat }}</div>
+        <div class="col-md-3"><strong>Updated:</strong> {{ pdf.updated_at.strftime('%Y-%m-%d %H:%M') }}</div>
+        <div class="col-md-3"><strong>SHA256:</strong> <code class="small text-truncate d-inline-block" style="max-width: 140px;">{{ pdf.sha256 }}</code></div>
+    </div>
+</div>
+
+<div class="card sh-card shadow-sm p-3">
+    <h6 class="fw-bold mb-3">Archived Previous Revisions</h6>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0 small">
+            <thead class="table-light">
+                <tr>
+                    <th>Revision #</th>
+                    <th>Previous Filename</th>
+                    <th>Size</th>
+                    <th>Archived Date</th>
+                    <th>SHA256 Checksum</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in versions %}
+                <tr>
+                    <td><code>v{{ loop.revindex }}</code></td>
+                    <td>{{ v.original_filename }}</td>
+                    <td>{{ v.file_size | filesizeformat }}</td>
+                    <td>{{ v.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td><code class="small">{{ v.sha256 }}</code></td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">No earlier revisions archived.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
