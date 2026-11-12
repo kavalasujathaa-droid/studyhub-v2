@@ -19,7 +19,7 @@
 
 <div class="card sh-card shadow-sm p-4 mb-4">
     <h6 class="fw-bold text-primary mb-3">Current Active Version</h6>
-    <div class="row small">
+    <div class="row small g-2">
         <div class="col-md-3"><strong>Filename:</strong> {{ pdf.original_filename }}</div>
         <div class="col-md-3"><strong>Size:</strong> {{ pdf.file_size | filesizeformat }}</div>
         <div class="col-md-3"><strong>Updated:</strong> {{ pdf.updated_at.strftime('%Y-%m-%d %H:%M') }}</div>
@@ -33,25 +33,34 @@
         <table class="table table-hover align-middle mb-0 small">
             <thead class="table-light">
                 <tr>
-                    <th>Revision #</th>
+                    <th>Revision</th>
                     <th>Previous Filename</th>
                     <th>Size</th>
                     <th>Archived Date</th>
                     <th>SHA256 Checksum</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
                 {% for v in versions %}
                 <tr>
-                    <td><code>v{{ loop.revindex }}</code></td>
+                    <td><code>v{{ v.version_number }}</code></td>
                     <td>{{ v.original_filename }}</td>
                     <td>{{ v.file_size | filesizeformat }}</td>
                     <td>{{ v.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                    <td><code class="small">{{ v.sha256 }}</code></td>
+                    <td><code class="small text-truncate d-inline-block" style="max-width: 120px;">{{ v.sha256 }}</code></td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin.restore_version', pdf_id=pdf.id, version_id=v.id) }}" class="d-inline">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="return confirm('Restore this version as the active PDF document?')">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i> Restore
+                            </button>
+                        </form>
+                    </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="5" class="text-center py-4 text-muted">No earlier revisions archived.</td>
+                    <td colspan="6" class="text-center py-4 text-muted">No earlier revisions archived.</td>
                 </tr>
                 {% endfor %}
             </tbody>

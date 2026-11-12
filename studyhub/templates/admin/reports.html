@@ -1,0 +1,107 @@
+{% extends "admin/layout.html" %}
+
+{% block title %}Content Reports - StudyHub V2{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Reports on Your Uploaded PDFs</h3>
+        <p class="text-muted small mb-0">Review feedback and reports flagged by students for incorrect, missing, or corrupted content</p>
+    </div>
+</div>
+
+<div class="card sh-card shadow-sm p-3">
+    {% if reports %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Status</th>
+                        <th>Target PDF</th>
+                        <th>Reason Category</th>
+                        <th>Student Feedback</th>
+                        <th>Date Reported</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td>
+                            <span class="badge {% if report.status == 'pending' %}bg-danger{% elif report.status == 'under_review' %}bg-warning text-dark{% elif report.status == 'resolved' %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ report.status | replace('_', ' ') | title }}
+                            </span>
+                        </td>
+                        <td class="fw-bold">
+                            {% if report.pdf_material %}
+                                <a href="{{ url_for('student.view_pdf', pdf_id=report.pdf_material.id) }}" target="_blank" class="text-decoration-none">
+                                    <i class="bi bi-file-earmark-pdf text-danger me-1"></i>{{ report.pdf_material.title }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted">Archived PDF</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-secondary-subtle text-secondary border">{{ report.category | replace('_', ' ') | title }}</span></td>
+                        <td class="small text-secondary" style="max-width: 250px;">
+                            {{ report.description }}
+                            {% if report.admin_notes %}
+                                <div class="mt-1 small text-primary"><strong>Resolution Note:</strong> {{ report.admin_notes }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="small text-muted">{{ report.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            {% if report.status in ['pending', 'under_review'] %}
+                                <button class="btn btn-sm btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#resolveModal{{ report.id }}">
+                                    Respond
+                                </button>
+
+                                <!-- Resolve Modal -->
+                                <div class="modal fade" id="resolveModal{{ report.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form method="POST" action="{{ url_for('admin.resolve_report', report_id=report.id) }}">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title fw-bold">Address Content Report</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p class="small text-muted">Update status for report on <strong>{{ report.pdf_material.title if report.pdf_material else 'PDF' }}</strong>.</p>
+                                                    <div class="mb-3">
+                                                        <label class="form-label small fw-semibold">Action</label>
+                                                        <select name="action" class="form-select" required>
+                                                            <option value="under_review">Mark Under Review (Investigating)</option>
+                                                            <option value="resolve">Mark Resolved (Fixed or Replacement Uploaded)</option>
+                                                            <option value="dismiss">Dismiss (Not an Issue)</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label small fw-semibold">Response / Admin Notes</label>
+                                                        <textarea name="admin_notes" class="form-control" rows="3" placeholder="Explain the resolution or correction made..."></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-primary">Save Response</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <span class="small text-muted">Resolved</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-shield-check fs-1 text-success"></i>
+            <p class="mt-2">No reports submitted regarding your uploaded documents.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "owner/layout.html" %}
+
+{% block title %}Backup & Storage Inventory - StudyHub V2{% endblock %}
+
+{% block owner_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Backup & Cloudflare R2 Inventory</h3>
+        <p class="text-muted small mb-0">Export platform metadata snapshots and audit real-time object storage on Cloudflare R2</p>
+    </div>
+    <a href="{{ url_for('owner.export_metadata') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+        <i class="bi bi-download me-1"></i> Export Full JSON Metadata
+    </a>
+</div>
+
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card sh-card p-3 shadow-sm">
+            <span class="text-muted small">R2 Stored Objects</span>
+            <h3 class="fw-bold mb-0 mt-1">{{ inventory.total_objects }}</h3>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card sh-card p-3 shadow-sm">
+            <span class="text-muted small">Total Storage Size</span>
+            <h3 class="fw-bold mb-0 mt-1">{{ stats.total_storage_mb }} MB</h3>
+            <small class="text-muted">{{ stats.total_storage_gb }} GB / 9.00 GB R2 safety quota</small>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card sh-card p-3 shadow-sm">
+            <span class="text-muted small">Export Format</span>
+            <h3 class="fw-bold mb-0 mt-1">JSON Snapshot</h3>
+            <small class="text-muted">Users, Subjects, Titles, PDFs, Tags</small>
+        </div>
+    </div>
+</div>
+
+<div class="card sh-card shadow-sm p-3">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Cloudflare R2 Object Store Inventory</h5>
+        <span class="badge bg-secondary-subtle text-secondary-emphasis">{{ inventory.objects | length }} items listed</span>
+    </div>
+    {% if inventory.objects %}
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0 font-monospace small">
+                <thead class="table-light font-sans-serif">
+                    <tr>
+                        <th>Storage Key</th>
+                        <th>Object Size</th>
+                        <th>Last Modified</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for obj in inventory.objects %}
+                    <tr>
+                        <td><code>{{ obj.key }}</code></td>
+                        <td>{{ obj.size | filesizeformat }}</td>
+                        <td class="text-muted">{{ obj.last_modified }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-cloud-slash fs-1"></i>
+            <p class="mt-2">No files currently stored on Cloudflare R2 bucket.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

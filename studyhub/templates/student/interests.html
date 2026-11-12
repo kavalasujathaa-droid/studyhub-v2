@@ -1,0 +1,94 @@
+{% extends "student/layout.html" %}
+
+{% block title %}My Learning Interests - StudyHub V2{% endblock %}
+
+{% block student_content %}
+<div class="mb-4">
+    <h3 class="fw-bold mb-1"><i class="bi bi-compass text-primary me-2"></i>Personalize My Learning Interests</h3>
+    <p class="text-muted small mb-0">Select your preferred subjects and categories to personalize recommendations on your dashboard</p>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card sh-card shadow-sm p-4">
+            <form method="POST" action="{{ url_for('student.interests') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <!-- 1. Categories Preference -->
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-2">Preferred Categories</h5>
+                    <p class="small text-muted mb-3">Choose the broad domains relevant to your degree or course:</p>
+                    <div class="row g-2">
+                        {% for cat in all_categories %}
+                        <div class="col-sm-6">
+                            <div class="form-check p-2 border rounded">
+                                <input class="form-check-input ms-1 me-2" type="checkbox" name="category_ids" value="{{ cat.id }}" id="catCheck{{ cat.id }}"
+                                       {% if cat.id in current_interests.category_ids %}checked{% endif %}>
+                                <label class="form-check-label small fw-semibold" for="catCheck{{ cat.id }}">
+                                    <i class="bi {{ cat.icon }} me-1 text-primary"></i> {{ cat.name }}
+                                </label>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="small text-muted">No categories created yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- 2. Specific Subjects Preference -->
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-2">Favorite Subjects</h5>
+                    <p class="small text-muted mb-3">Pick specific subjects you are currently studying:</p>
+                    <div class="row g-2" style="max-height: 260px; overflow-y: auto;">
+                        {% for s in all_subjects %}
+                        <div class="col-sm-6">
+                            <div class="form-check p-2 border rounded">
+                                <input class="form-check-input ms-1 me-2" type="checkbox" name="subject_ids" value="{{ s.id }}" id="subCheck{{ s.id }}"
+                                       {% if s.id in current_interests.subject_ids %}checked{% endif %}>
+                                <label class="form-check-label small fw-semibold text-truncate d-inline-block" style="max-width: 220px;" for="subCheck{{ s.id }}">
+                                    {{ s.subject_name }}
+                                </label>
+                            </div>
+                        </div>
+                        {% else %}
+                        <p class="small text-muted">No subjects published yet.</p>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- 3. Key Topics & Tags -->
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-2">Topic Tags</h5>
+                    <p class="small text-muted mb-2">Comma-separated topics (e.g. <code>calculus, machine-learning, organic-chemistry</code>):</p>
+                    <input type="text" name="tags" class="form-control" value="{% for t in current_interests.tag_names %}{{ t }}{% if not loop.last %}, {% endif %}{% endfor %}" placeholder="e.g. linear algebra, past papers, algorithms">
+                </div>
+
+                <button type="submit" class="btn btn-primary rounded-pill px-5 shadow-sm fw-semibold">
+                    <i class="bi bi-check-circle-fill me-1"></i> Save Learning Preferences
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Recommendations explanation box -->
+    <div class="col-lg-4">
+        <div class="card sh-card shadow-sm p-4">
+            <h6 class="fw-bold"><i class="bi bi-stars text-warning me-2"></i>How Recommendations Work</h6>
+            <p class="small text-muted mt-2">
+                StudyHub V2 is a unified shared library with no access restrictions.
+            </p>
+            <p class="small text-muted">
+                Your selected interests are used <strong>exclusively</strong> to customize your personalized dashboard feed:
+            </p>
+            <ul class="small text-muted ps-3">
+                <li>Spotlight recommended lecture materials</li>
+                <li>Feature relevant subject playlists</li>
+                <li>Surface newly uploaded notes matching your topics</li>
+            </ul>
+            <p class="small text-muted mb-0">
+                You can browse and search the entire global catalog freely at any time.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

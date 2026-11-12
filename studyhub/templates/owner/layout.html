@@ -2,11 +2,11 @@
 
 {% block body %}
 <div class="d-flex">
-    <!-- Platform Owner Sidebar -->
+    <!-- Main Administrator Sidebar -->
     <div class="sh-sidebar p-3 d-none d-md-block shadow-sm">
         <div class="mb-4 px-3">
-            <span class="text-uppercase small fw-bold text-muted" style="letter-spacing: 0.1em;">Platform Admin</span>
-            <h6 class="fw-bold text-white mt-1">Owner Console</h6>
+            <span class="text-uppercase small fw-bold text-muted" style="letter-spacing: 0.1em;">Master Platform</span>
+            <h6 class="fw-bold text-white mt-1">Main Admin Console</h6>
         </div>
         <ul class="nav flex-column">
             <li class="nav-item">
@@ -20,8 +20,28 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {% if request.endpoint == 'owner.tenants' %}active{% endif %}" href="{{ url_for('owner.tenants') }}">
-                    <i class="bi bi-building"></i> Tenants / Libraries
+                <a class="nav-link {% if request.endpoint == 'owner.categories' %}active{% endif %}" href="{{ url_for('owner.categories') }}">
+                    <i class="bi bi-folder2-open"></i> Content Categories
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'owner.announcements' %}active{% endif %}" href="{{ url_for('owner.announcements') }}">
+                    <i class="bi bi-megaphone"></i> Announcements
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'owner.moderation' %}active{% endif %}" href="{{ url_for('owner.moderation') }}">
+                    <i class="bi bi-shield-exclamation"></i> Moderation Queue
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'owner.recovery' %}active{% endif %}" href="{{ url_for('owner.recovery') }}">
+                    <i class="bi bi-recycle"></i> Recovery Vault
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'owner.backups' %}active{% endif %}" href="{{ url_for('owner.backups') }}">
+                    <i class="bi bi-cloud-arrow-down"></i> Backup & Storage
                 </a>
             </li>
             <li class="nav-item">
@@ -30,8 +50,8 @@
                 </a>
             </li>
         </ul>
-        <div class="mt-auto px-3 pt-5 text-muted small border-top border-secondary-subtle">
-            <i class="bi bi-lock-fill text-warning me-1"></i> Private academic data isolated by design.
+        <div class="mt-auto px-3 pt-4 text-muted small border-top border-secondary-subtle">
+            <i class="bi bi-globe2 text-info me-1"></i> Unified Global Shared Library
         </div>
     </div>
 

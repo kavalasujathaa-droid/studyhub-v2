@@ -1,0 +1,98 @@
+{% extends "student/layout.html" %}
+
+{% block title %}My Study Notes - StudyHub V2{% endblock %}
+
+{% block student_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-journal-text text-primary me-2"></i>My Private Study Notes</h3>
+        <p class="text-muted small mb-0">Personal notes, revision highlights, and formula summaries created during your reading sessions</p>
+    </div>
+</div>
+
+<!-- Search Filter -->
+<div class="card sh-card shadow-sm p-3 mb-4">
+    <form method="GET" action="{{ url_for('student.notes') }}" class="row g-2">
+        <div class="col-md-10">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" class="form-control" placeholder="Search across your notes and headlines..." value="{{ search_query or '' }}">
+            </div>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100">Search</button>
+            {% if search_query %}
+                <a href="{{ url_for('student.notes') }}" class="btn btn-outline-secondary">Reset</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<div class="row g-4">
+    {% for note in notes %}
+    <div class="col-md-6 col-lg-4" id="noteCard{{ note.id }}">
+        <div class="card sh-card p-3 shadow-sm h-100 d-flex flex-column">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <h5 class="fw-bold mb-0 text-truncate" style="max-width: 220px;">{{ note.title }}</h5>
+                <button class="btn btn-sm btn-outline-danger border-0 p-0 delete-note-btn" data-note-id="{{ note.id }}" title="Delete note">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </div>
+
+            {% if note.page_number %}
+                <span class="badge bg-secondary-subtle text-secondary small align-self-start mb-2">Page {{ note.page_number }}</span>
+            {% endif %}
+
+            <p class="text-secondary small mb-3 flex-grow-1" style="white-space: pre-line;">{{ note.content }}</p>
+
+            <div class="border-top pt-2 mt-auto d-flex justify-content-between align-items-center">
+                <small class="text-muted text-truncate" style="max-width: 170px;">
+                    <i class="bi bi-file-earmark-pdf me-1 text-danger"></i> {{ note.pdf_material.title if note.pdf_material else 'PDF' }}
+                </small>
+                {% if note.pdf_material %}
+                <a href="{{ url_for('student.view_pdf', pdf_id=note.pdf_material.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                    Open PDF
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5 text-muted">
+        <i class="bi bi-journal-x fs-1 text-secondary mb-2"></i>
+        <h5 class="fw-bold">No Study Notes Found</h5>
+        <p class="small">Open any PDF in the viewer and click "My Notes" to create personal revision notes.</p>
+        <a href="{{ url_for('student.dashboard') }}" class="btn btn-primary rounded-pill px-4">Browse Documents</a>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".delete-note-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+            const noteId = btn.getAttribute("data-note-id");
+            if (!confirm("Permanently delete this note?")) return;
+
+            try {
+                const res = await fetch(`/api/v1/notes/${noteId}`, {
+                    method: "DELETE",
+                    headers: { "X-CSRFToken": window.getCSRFToken() }
+                });
+                if (res.ok) {
+                    const card = document.getElementById(`noteCard${noteId}`);
+                    if (card) card.remove();
+                    window.showToast("Note deleted.", "info");
+                } else {
+                    window.showToast("Failed to delete note.", "danger");
+                }
+            } catch (err) {
+                window.showToast("Network error.", "danger");
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

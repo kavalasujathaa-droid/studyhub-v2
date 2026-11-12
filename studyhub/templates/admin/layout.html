@@ -5,8 +5,8 @@
     <!-- Admin Sidebar -->
     <div class="sh-sidebar p-3 d-none d-md-block shadow-sm">
         <div class="mb-4 px-3">
-            <span class="text-uppercase small fw-bold text-muted" style="letter-spacing: 0.1em;">Institution Library</span>
-            <h6 class="fw-bold text-white mt-1 text-truncate">{{ current_user.tenant.tenant_name if current_user.tenant else 'Admin' }}</h6>
+            <span class="text-uppercase small fw-bold text-muted" style="letter-spacing: 0.1em;">Educator Portal</span>
+            <h6 class="fw-bold text-white mt-1 text-truncate">{{ current_user.full_name }}</h6>
         </div>
         <ul class="nav flex-column">
             <li class="nav-item">
@@ -16,12 +16,12 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link {% if request.endpoint == 'admin.students' %}active{% endif %}" href="{{ url_for('admin.students') }}">
-                    <i class="bi bi-people"></i> Manage Students
+                    <i class="bi bi-people"></i> My Students
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {% if request.endpoint in ['admin.subjects', 'admin.titles'] %}active{% endif %}" href="{{ url_for('admin.subjects') }}">
-                    <i class="bi bi-folder2-open"></i> Subjects & Titles
+                    <i class="bi bi-folder2-open"></i> Shared Subjects & Playlists
                 </a>
             </li>
             <li class="nav-item">
@@ -31,12 +31,17 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link {% if request.endpoint in ['admin.materials', 'admin.material_versions'] %}active{% endif %}" href="{{ url_for('admin.materials') }}">
-                    <i class="bi bi-file-earmark-pdf"></i> PDF Materials
+                    <i class="bi bi-file-earmark-pdf"></i> My Uploaded Materials
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.endpoint in ['admin.reports', 'admin.resolve_report'] %}active{% endif %}" href="{{ url_for('admin.reports') }}">
+                    <i class="bi bi-shield-exclamation"></i> Content Reports
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link {% if request.endpoint == 'admin.storage' %}active{% endif %}" href="{{ url_for('admin.storage') }}">
-                    <i class="bi bi-pie-chart"></i> Storage Usage
+                    <i class="bi bi-pie-chart"></i> Contribution Analytics
                 </a>
             </li>
             <li class="nav-item">
@@ -46,7 +51,7 @@
             </li>
         </ul>
         <div class="mt-auto px-3 pt-4 text-muted small border-top border-secondary-subtle">
-            <i class="bi bi-shield-check text-success me-1"></i> Isolated Tenant Mode
+            <i class="bi bi-globe2 text-info me-1"></i> Global Shared Library
         </div>
     </div>
 

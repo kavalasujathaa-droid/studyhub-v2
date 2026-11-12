@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     });
                     titleSelect.disabled = false;
                 } else {
-                    titleSelect.innerHTML = '<option value="">No titles found. Please add a title first.</option>';
+                    titleSelect.innerHTML = '<option value="">No titles found. Please add a title under this subject first.</option>';
                     titleSelect.disabled = true;
                 }
             } catch (err) {
@@ -84,6 +84,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const pdfTitle = document.getElementById("pdfTitleInput").value.trim();
             const description = document.getElementById("pdfDescriptionInput").value.trim();
             const isPublished = document.getElementById("pdfPublishedCheck").checked;
+            const language = document.getElementById("pdfLanguageInput") ? document.getElementById("pdfLanguageInput").value.trim() : "English";
+            const academicYear = document.getElementById("pdfYearInput") ? document.getElementById("pdfYearInput").value.trim() : "";
+            const semester = document.getElementById("pdfSemesterInput") ? document.getElementById("pdfSemesterInput").value.trim() : "";
+            const tags = document.getElementById("pdfTagsInput") ? document.getElementById("pdfTagsInput").value.trim() : "";
 
             if (!file || !subjectId || !titleId || !pdfTitle) {
                 alert("Please complete all required fields.");
@@ -164,7 +168,11 @@ document.addEventListener("DOMContentLoaded", () => {
                         description: description,
                         storage_key: storage_key,
                         original_filename: file.name,
-                        is_published: isPublished
+                        is_published: isPublished,
+                        language: language,
+                        academic_year: academicYear,
+                        semester: semester,
+                        tags: tags
                     })
                 });
 

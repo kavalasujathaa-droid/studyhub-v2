@@ -1,0 +1,98 @@
+{% extends "owner/layout.html" %}
+
+{% block title %}Manage Announcements - StudyHub V2{% endblock %}
+
+{% block owner_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Platform Announcements</h3>
+        <p class="text-muted small mb-0">Broadcast messages, exam notifications, and platform maintenance updates to all students and admins</p>
+    </div>
+    <button class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#createAnnouncementModal">
+        <i class="bi bi-megaphone-fill me-1"></i> Broadcast Announcement
+    </button>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card sh-card shadow-sm p-3">
+            {% if announcements %}
+                <div class="list-group list-group-flush">
+                    {% for a in announcements %}
+                    <div class="list-group-item px-3 py-3">
+                        <div class="d-flex w-100 justify-content-between align-items-center">
+                            <h5 class="mb-1 fw-bold">
+                                {% if a.is_pinned %}
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle me-2"><i class="bi bi-pin-angle-fill"></i> Pinned</span>
+                                {% endif %}
+                                {{ a.title }}
+                            </h5>
+                            <small class="text-muted">{{ a.created_at.strftime('%b %d, %Y %H:%M') }}</small>
+                        </div>
+                        <p class="mb-2 text-secondary" style="white-space: pre-line;">{{ a.content }}</p>
+                        <small class="text-muted"><i class="bi bi-person me-1"></i> Posted by {{ a.author.username if a.author else 'Platform Owner' }}</small>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-bell-slash fs-1"></i>
+                    <p class="mt-2">No announcements published yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card sh-card shadow-sm p-4">
+            <h6 class="fw-bold"><i class="bi bi-info-circle-fill text-primary me-2"></i>Announcement System</h6>
+            <p class="small text-muted mt-2">
+                Announcements appear on:
+            </p>
+            <ul class="small text-muted ps-3">
+                <li>Student dashboard feed</li>
+                <li>In-app notifications drawer</li>
+                <li>Admin portal notification banner</li>
+            </ul>
+            <p class="small text-muted mb-0">
+                Pinned announcements stay at the very top of all student feeds.
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Create Announcement Modal -->
+<div class="modal fade" id="createAnnouncementModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('owner.announcements') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Publish Platform Announcement</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Announcement Title</label>
+                        <input type="text" name="title" class="form-control" placeholder="e.g. End Semester Exam Revision Notes Available" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Content</label>
+                        <textarea name="content" class="form-control" rows="4" placeholder="Write full announcement details..." required></textarea>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="is_pinned" id="isPinnedCheck">
+                        <label class="form-check-label small fw-semibold" for="isPinnedCheck">
+                            Pin announcement to top of dashboard
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Publish Announcement</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

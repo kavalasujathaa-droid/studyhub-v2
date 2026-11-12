@@ -1,12 +1,11 @@
 from datetime import datetime, timezone
-from flask import Blueprint, render_template, redirect, url_for, flash, request, abort, current_app
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
 from flask_login import login_user, logout_user, login_required, current_user
 from studyhub.extensions import db, limiter
 from studyhub.models.user import User
-from studyhub.models.tenant import Tenant
 from studyhub.services.auth_service import (
-    is_platform_owner_initialized,
-    bootstrap_platform_owner,
+    is_main_admin_initialized,
+    bootstrap_main_admin,
     verify_password,
     hash_password,
 )
@@ -16,9 +15,9 @@ auth_bp = Blueprint("auth", __name__)
 
 @auth_bp.route("/setup", methods=["GET", "POST"])
 def setup():
-    """First-time Platform Owner setup using OWNER_BOOTSTRAP_TOKEN."""
-    if is_platform_owner_initialized():
-        flash("Platform Owner setup is permanently closed.", "info")
+    """First-time Main Administrator setup using OWNER_BOOTSTRAP_TOKEN."""
+    if is_main_admin_initialized():
+        flash("Main Administrator setup is permanently closed.", "info")
         return redirect(url_for("auth.login"))
 
     if request.method == "POST":
@@ -38,7 +37,7 @@ def setup():
             return render_template("auth/setup.html")
 
         try:
-            owner = bootstrap_platform_owner(
+            owner = bootstrap_main_admin(
                 token=token,
                 full_name=full_name,
                 username=username,
@@ -47,7 +46,7 @@ def setup():
                 ip_address=request.remote_addr
             )
             login_user(owner)
-            flash("StudyHub V2 Platform Owner account initialized successfully!", "success")
+            flash("StudyHub V2 Main Administrator initialized successfully!", "success")
             return redirect(url_for("owner.dashboard"))
         except ValueError as e:
             flash(str(e), "danger")
@@ -57,19 +56,18 @@ def setup():
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
-@limiter.limit("15 per minute")
+@limiter.limit("20 per minute")
 def login():
     """Secure login with rate limiting and Argon2id verification."""
     if current_user.is_authenticated:
-        if current_user.is_platform_owner():
+        if current_user.is_main_admin():
             return redirect(url_for("owner.dashboard"))
         elif current_user.is_admin():
             return redirect(url_for("admin.dashboard"))
         else:
             return redirect(url_for("student.dashboard"))
 
-    # If first time and owner not yet created, prompt setup
-    if not is_platform_owner_initialized():
+    if not is_main_admin_initialized():
         return redirect(url_for("auth.setup"))
 
     if request.method == "POST":
@@ -78,10 +76,9 @@ def login():
         remember = bool(request.form.get("remember"))
 
         if not identifier or not password:
-            flash("Please enter both username/email and password.", "danger")
+            flash("Please enter username/email and password.", "danger")
             return render_template("auth/login.html")
 
-        # Lookup user by username or email
         user = db.session.query(User).filter(
             (User.username == identifier) | (User.email == identifier)
         ).first()
@@ -100,21 +97,12 @@ def login():
             flash("Your account has been deactivated. Please contact your administrator.", "danger")
             return render_template("auth/login.html")
 
-        # If tenant user, verify tenant status
-        if user.tenant_id:
-            tenant = db.session.get(Tenant, user.tenant_id)
-            if not tenant or tenant.status != "active":
-                flash("Your institution's library is currently inactive or suspended.", "danger")
-                return render_template("auth/login.html")
-
-        # Success: update login time & log in
         user.last_login = datetime.now(timezone.utc)
         db.session.commit()
         login_user(user, remember=remember)
 
         AuditService.log(
             action="login_success",
-            tenant_id=user.tenant_id,
             actor_user_id=user.id,
             description=f"User {user.username} logged in successfully.",
             ip_address=request.remote_addr
@@ -124,7 +112,7 @@ def login():
             flash("You must set a new password on your first login.", "warning")
             return redirect(url_for("auth.change_password"))
 
-        if user.is_platform_owner():
+        if user.is_main_admin():
             return redirect(url_for("owner.dashboard"))
         elif user.is_admin():
             return redirect(url_for("admin.dashboard"))
@@ -137,10 +125,8 @@ def login():
 @auth_bp.route("/logout")
 @login_required
 def logout():
-    """Logs out authenticated user."""
     AuditService.log(
         action="logout",
-        tenant_id=current_user.tenant_id,
         actor_user_id=current_user.id,
         description=f"User {current_user.username} logged out.",
         ip_address=request.remote_addr
@@ -153,7 +139,6 @@ def logout():
 @auth_bp.route("/change-password", methods=["GET", "POST"])
 @login_required
 def change_password():
-    """Allows authenticated user to update their password."""
     if request.method == "POST":
         current_password = request.form.get("current_password", "")
         new_password = request.form.get("new_password", "")
@@ -177,14 +162,13 @@ def change_password():
 
         AuditService.log(
             action="password_changed",
-            tenant_id=current_user.tenant_id,
             actor_user_id=current_user.id,
             description=f"User {current_user.username} changed their password.",
             ip_address=request.remote_addr
         )
 
         flash("Your password has been updated successfully.", "success")
-        if current_user.is_platform_owner():
+        if current_user.is_main_admin():
             return redirect(url_for("owner.dashboard"))
         elif current_user.is_admin():
             return redirect(url_for("admin.dashboard"))

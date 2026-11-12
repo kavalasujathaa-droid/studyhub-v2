@@ -1,69 +1,120 @@
 import pytest
 from studyhub.services.engagement_service import EngagementService
 
-def test_bookmark_toggle_and_retrieval(app, two_tenants):
+def test_global_bookmarking_and_collections(app, setup_shared_environment):
+    env = setup_shared_environment
     with app.app_context():
-        tenant_a_id = two_tenants["tenant_a"].id
-        student_a1_id = two_tenants["student_a1"].id
-        pdf_a_id = two_tenants["pdf_a"].id
+        user = env["student_a1"]
+        pdf_a = env["pdf_a"]
+        pdf_b = env["pdf_b"]
 
-        # Initial check
-        assert not EngagementService.is_bookmarked(tenant_a_id, student_a1_id, pdf_a_id)
+        # Student A can bookmark both Admin A's and Admin B's PDFs (global shared library)
+        assert not EngagementService.is_bookmarked(user.id, pdf_a.id)
+        assert EngagementService.toggle_bookmark(user.id, pdf_a.id) is True
+        assert EngagementService.is_bookmarked(user.id, pdf_a.id)
 
-        # Toggle on
-        bookmarked = EngagementService.toggle_bookmark(tenant_a_id, student_a1_id, pdf_a_id)
-        assert bookmarked is True
-        assert EngagementService.is_bookmarked(tenant_a_id, student_a1_id, pdf_a_id)
+        # Create Collection
+        col = EngagementService.create_bookmark_collection(user.id, "Finals Revision")
+        assert col.name == "Finals Revision"
 
-        user_bookmarks = EngagementService.get_user_bookmarks(tenant_a_id, student_a1_id)
-        assert len(user_bookmarks) == 1
-        assert user_bookmarks[0].id == pdf_a_id
+        # Bookmark PDF B into collection
+        assert EngagementService.toggle_bookmark(user.id, pdf_b.id, collection_id=col.id) is True
 
-        # Toggle off
-        bookmarked = EngagementService.toggle_bookmark(tenant_a_id, student_a1_id, pdf_a_id)
-        assert bookmarked is False
-        assert not EngagementService.is_bookmarked(tenant_a_id, student_a1_id, pdf_a_id)
+        bookmarks_all = EngagementService.get_user_bookmarks(user.id)
+        assert len(bookmarks_all) == 2
 
-def test_cannot_bookmark_foreign_pdf(app, two_tenants):
+        bookmarks_col = EngagementService.get_user_bookmarks(user.id, collection_id=col.id)
+        assert len(bookmarks_col) == 1
+        assert bookmarks_col[0].id == pdf_b.id
+
+def test_reading_progress_and_history(app, setup_shared_environment):
+    env = setup_shared_environment
     with app.app_context():
-        tenant_a_id = two_tenants["tenant_a"].id
-        student_a1_id = two_tenants["student_a1"].id
-        pdf_b_id = two_tenants["pdf_b"].id
+        user = env["student_a1"]
+        pdf_a = env["pdf_a"]
 
-        with pytest.raises(ValueError, match="PDF not found in your institution"):
-            EngagementService.toggle_bookmark(tenant_a_id, student_a1_id, pdf_b_id)
-
-def test_viewing_history(app, two_tenants):
-    with app.app_context():
-        tenant_a_id = two_tenants["tenant_a"].id
-        student_a1_id = two_tenants["student_a1"].id
-        pdf_a_id = two_tenants["pdf_a"].id
-
-        EngagementService.record_view(tenant_a_id, student_a1_id, pdf_a_id)
-        history = EngagementService.get_user_viewing_history(tenant_a_id, student_a1_id)
-
+        EngagementService.record_view(user.id, pdf_a.id, page_number=5, reading_status="in_progress")
+        history = EngagementService.get_user_viewing_history(user.id)
         assert len(history) == 1
-        assert history[0].id == pdf_a_id
+        assert history[0]["pdf"].id == pdf_a.id
+        assert history[0]["last_page"] == 5
+        assert history[0]["reading_status"] == "in_progress"
 
-def test_tenant_isolated_search(app, two_tenants):
+        continue_list = EngagementService.get_continue_reading_materials(user.id)
+        assert len(continue_list) == 1
+        assert continue_list[0].id == pdf_a.id
+
+        # Mark completed
+        EngagementService.record_view(user.id, pdf_a.id, page_number=12, reading_status="completed")
+        history_updated = EngagementService.get_user_viewing_history(user.id)
+        assert history_updated[0]["reading_status"] == "completed"
+
+def test_private_study_notes_crud(app, setup_shared_environment):
+    env = setup_shared_environment
     with app.app_context():
-        tenant_a_id = two_tenants["tenant_a"].id
-        tenant_b_id = two_tenants["tenant_b"].id
+        user = env["student_a1"]
+        other_user = env["student_b1"]
+        pdf_a = env["pdf_a"]
 
-        # Search for "Calculus" in Tenant A
-        results_a = EngagementService.search_tenant_materials(tenant_a_id, "Calculus")
-        assert len(results_a) == 1
-        assert results_a[0].title == "Calculus Notes A"
+        # Create note
+        note = EngagementService.create_study_note(
+            user_id=user.id,
+            pdf_id=pdf_a.id,
+            title="Tree Balancing Lemma",
+            content="AVL balance factor must be in [-1, 0, 1].",
+            page_number=3
+        )
+        assert note.title == "Tree Balancing Lemma"
 
-        # Searching for "Calculus" in Tenant B returns empty list
-        results_b = EngagementService.search_tenant_materials(tenant_b_id, "Calculus")
-        assert len(results_b) == 0
+        # User notes list
+        notes = EngagementService.get_user_notes(user.id, pdf_id=pdf_a.id)
+        assert len(notes) == 1
 
-        # Searching for "Mechanics" in Tenant A returns empty list
-        results_a_mech = EngagementService.search_tenant_materials(tenant_a_id, "Mechanics")
-        assert len(results_a_mech) == 0
+        # Other user cannot see note
+        assert len(EngagementService.get_user_notes(other_user.id, pdf_id=pdf_a.id)) == 0
 
-        # Searching for "Mechanics" in Tenant B returns Mechanics Notes B
-        results_b_mech = EngagementService.search_tenant_materials(tenant_b_id, "Mechanics")
-        assert len(results_b_mech) == 1
-        assert results_b_mech[0].title == "Mechanics Notes B"
+        # Other user cannot modify or delete note
+        with pytest.raises(PermissionError):
+            EngagementService.update_study_note(note.id, other_user.id, "Hacked", "Hacked")
+
+        with pytest.raises(PermissionError):
+            EngagementService.delete_study_note(note.id, other_user.id)
+
+        # Original owner updates and deletes
+        EngagementService.update_study_note(note.id, user.id, "Updated Lemma", "New content")
+        assert EngagementService.get_user_notes(user.id)[0].title == "Updated Lemma"
+
+        EngagementService.delete_study_note(note.id, user.id)
+        assert len(EngagementService.get_user_notes(user.id)) == 0
+
+def test_interest_recommendations_and_global_search(app, setup_shared_environment):
+    env = setup_shared_environment
+    with app.app_context():
+        user = env["student_a1"]
+        subject_a = env["subject_a"]
+        cat_cs = env["category"]
+
+        # Set interests
+        EngagementService.set_user_interests(
+            user_id=user.id,
+            subject_ids=[subject_a.id],
+            category_ids=[cat_cs.id],
+            tag_names=["algorithms"]
+        )
+
+        rec_subjects = EngagementService.get_recommended_subjects(user.id)
+        assert len(rec_subjects) >= 1
+        assert any(s.id == subject_a.id for s in rec_subjects)
+
+        rec_pdfs = EngagementService.get_recommended_pdfs(user.id)
+        assert len(rec_pdfs) >= 1
+        assert any(p.id == env["pdf_a"].id for p in rec_pdfs)
+
+        # Global search
+        results = EngagementService.search_library(query_str="BST")
+        assert results.total >= 1
+        assert results.items[0].id == env["pdf_a"].id
+
+        results_vm = EngagementService.search_library(query_str="Memory")
+        assert results_vm.total >= 1
+        assert results_vm.items[0].id == env["pdf_b"].id

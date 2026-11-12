@@ -20,14 +20,32 @@
             <div>
                 <h5 class="fw-bold mb-0">{{ pdf.title }}</h5>
                 <span class="small text-muted">{{ subject.subject_name }} &bull; {{ title.title_name }} &bull; {{ pdf.file_size | filesizeformat }}</span>
+                {% if pdf.language %}<span class="badge bg-light text-secondary border ms-2">{{ pdf.language }}</span>{% endif %}
+                {% if pdf.academic_year %}<span class="badge bg-light text-secondary border ms-1">{{ pdf.academic_year }}</span>{% endif %}
             </div>
         </div>
 
-        <div class="d-flex gap-2">
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <!-- Reading Status Toggle -->
+            <button class="btn btn-outline-success btn-sm rounded-pill px-3" id="btnToggleCompleted" data-pdf-id="{{ pdf.id }}">
+                <i class="bi bi-check2-circle me-1"></i>
+                <span id="readingStatusLabel">Mark Completed</span>
+            </button>
+
+            <!-- Private Study Notes Modal Trigger -->
+            <button class="btn btn-outline-info btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#studyNotesModal">
+                <i class="bi bi-pencil-square me-1"></i> My Notes ({{ notes | length }})
+            </button>
+
             <!-- Bookmark Button -->
             <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 btn-bookmark-toggle {% if is_bookmarked %}active{% endif %}" data-pdf-id="{{ pdf.id }}">
                 <i class="bi {% if is_bookmarked %}bi-bookmark-fill text-warning{% else %}bi-bookmark{% endif %} me-1"></i>
                 <span>Bookmark</span>
+            </button>
+
+            <!-- Report Button -->
+            <button class="btn btn-outline-danger btn-sm rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#reportContentModal" title="Report issue with PDF">
+                <i class="bi bi-flag"></i> Report
             </button>
 
             <!-- Download Button -->
@@ -35,7 +53,7 @@
                 <i class="bi bi-download me-1"></i> Download
             </a>
 
-            <!-- Open in New Tab -->
+            <!-- Fullscreen View -->
             <a href="{{ pdf_url }}" target="_blank" class="btn btn-primary btn-sm rounded-pill px-3">
                 <i class="bi bi-box-arrow-up-right me-1"></i> Fullscreen
             </a>
@@ -44,7 +62,245 @@
 </div>
 
 <!-- Embedded PDF Iframe Viewer -->
-<div class="card sh-card shadow-sm p-1">
+<div class="card sh-card shadow-sm p-1 mb-4">
     <iframe src="{{ pdf_url }}" class="pdf-viewer-frame" title="{{ pdf.title }}"></iframe>
 </div>
+
+<!-- Study Notes Modal -->
+<div class="modal fade" id="studyNotesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="bi bi-journal-text me-2 text-primary"></i>My Private Study Notes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-muted mb-3">Notes are completely private to your account and saved against this PDF.</p>
+
+                <!-- New Note Form -->
+                <form id="addNoteForm" class="p-3 bg-light rounded mb-4">
+                    <h6 class="fw-bold mb-2 small">Add New Note</h6>
+                    <div class="row g-2 mb-2">
+                        <div class="col-8">
+                            <input type="text" id="noteTitleInput" class="form-control form-control-sm" placeholder="Note headline / concept..." required>
+                        </div>
+                        <div class="col-4">
+                            <input type="number" id="notePageInput" class="form-control form-control-sm" placeholder="Page # (optional)">
+                        </div>
+                    </div>
+                    <div class="mb-2">
+                        <textarea id="noteContentInput" class="form-control form-control-sm" rows="3" placeholder="Write key formulas, explanations, or exam reminders..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3">Save Note</button>
+                </form>
+
+                <!-- Existing Notes List -->
+                <h6 class="fw-bold mb-2 small">Saved Notes for this Document</h6>
+                <div id="notesListContainer">
+                    {% for note in notes %}
+                    <div class="card p-3 mb-2 border shadow-none" id="noteCard{{ note.id }}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h6 class="fw-bold mb-1">{{ note.title }} {% if note.page_number %}<span class="badge bg-secondary-subtle text-secondary small">Page {{ note.page_number }}</span>{% endif %}</h6>
+                            <button class="btn btn-sm btn-outline-danger border-0 p-0 delete-note-btn" data-note-id="{{ note.id }}"><i class="bi bi-trash"></i></button>
+                        </div>
+                        <p class="small text-muted mb-0" style="white-space: pre-line;">{{ note.content }}</p>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4 text-muted small" id="noNotesPlaceholder">No notes saved for this document yet.</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Content Modal -->
+<div class="modal fade" id="reportContentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="reportContentForm">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold text-danger"><i class="bi bi-flag-fill me-2"></i>Report Document Issue</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted">Submit an alert to the platform moderation team and educator regarding this document.</p>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Issue Category</label>
+                        <select id="reportCategorySelect" class="form-select" required>
+                            <option value="incorrect_content">Incorrect / Inaccurate Academic Content</option>
+                            <option value="corrupted_file">Corrupted / Incomplete Pages / Unreadable</option>
+                            <option value="copyright">Copyright / Intellectual Property Violation</option>
+                            <option value="inappropriate">Inappropriate or Offensive Material</option>
+                            <option value="duplicate">Duplicate Material</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Description / Page Details</label>
+                        <textarea id="reportDescriptionInput" class="form-control" rows="3" placeholder="Describe the error, affected page numbers, or issue..." required></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Submit Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const pdfId = "{{ pdf.id }}";
+
+    // 1. Reading Progress Toggle
+    const btnToggleCompleted = document.getElementById("btnToggleCompleted");
+    const readingStatusLabel = document.getElementById("readingStatusLabel");
+    let isCompleted = false;
+
+    if (btnToggleCompleted) {
+        btnToggleCompleted.addEventListener("click", async () => {
+            isCompleted = !isCompleted;
+            const status = isCompleted ? "completed" : "in_progress";
+
+            try {
+                const res = await fetch("/api/v1/reading-progress", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": window.getCSRFToken()
+                    },
+                    body: JSON.stringify({ pdf_id: pdfId, reading_status: status, page_number: 1 })
+                });
+                if (res.ok) {
+                    if (isCompleted) {
+                        btnToggleCompleted.className = "btn btn-success btn-sm rounded-pill px-3";
+                        readingStatusLabel.textContent = "Completed!";
+                        window.showToast("Marked as completed!", "success");
+                    } else {
+                        btnToggleCompleted.className = "btn btn-outline-success btn-sm rounded-pill px-3";
+                        readingStatusLabel.textContent = "Mark Completed";
+                        window.showToast("Marked in progress.", "info");
+                    }
+                }
+            } catch(e) {
+                window.showToast("Failed to update status", "danger");
+            }
+        });
+    }
+
+    // 2. Add Study Note
+    const addNoteForm = document.getElementById("addNoteForm");
+    if (addNoteForm) {
+        addNoteForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const title = document.getElementById("noteTitleInput").value.trim();
+            const content = document.getElementById("noteContentInput").value.trim();
+            const page = document.getElementById("notePageInput").value;
+
+            try {
+                const res = await fetch("/api/v1/notes", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": window.getCSRFToken()
+                    },
+                    body: JSON.stringify({
+                        pdf_id: pdfId,
+                        title: title,
+                        content: content,
+                        page_number: page ? parseInt(page) : null
+                    })
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    const placeholder = document.getElementById("noNotesPlaceholder");
+                    if (placeholder) placeholder.remove();
+
+                    const container = document.getElementById("notesListContainer");
+                    const card = document.createElement("div");
+                    card.className = "card p-3 mb-2 border shadow-none";
+                    card.id = `noteCard${data.note.id}`;
+                    card.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-start">
+                            <h6 class="fw-bold mb-1">${data.note.title} ${data.note.page_number ? `<span class="badge bg-secondary-subtle text-secondary small">Page ${data.note.page_number}</span>` : ''}</h6>
+                            <button class="btn btn-sm btn-outline-danger border-0 p-0 delete-note-btn" data-note-id="${data.note.id}"><i class="bi bi-trash"></i></button>
+                        </div>
+                        <p class="small text-muted mb-0" style="white-space: pre-line;">${data.note.content}</p>
+                    `;
+                    container.prepend(card);
+                    addNoteForm.reset();
+                    attachDeleteNoteHandler(card.querySelector(".delete-note-btn"));
+                    window.showToast("Note added!", "success");
+                } else {
+                    window.showToast(data.error || "Failed to save note.", "danger");
+                }
+            } catch (err) {
+                window.showToast("Network error.", "danger");
+            }
+        });
+    }
+
+    // Delete note handler
+    function attachDeleteNoteHandler(btn) {
+        btn.addEventListener("click", async () => {
+            const noteId = btn.getAttribute("data-note-id");
+            if (!confirm("Delete this study note?")) return;
+
+            try {
+                const res = await fetch(`/api/v1/notes/${noteId}`, {
+                    method: "DELETE",
+                    headers: { "X-CSRFToken": window.getCSRFToken() }
+                });
+                if (res.ok) {
+                    const card = document.getElementById(`noteCard${noteId}`);
+                    if (card) card.remove();
+                    window.showToast("Note deleted.", "info");
+                }
+            } catch (e) {
+                window.showToast("Failed to delete note.", "danger");
+            }
+        });
+    }
+    document.querySelectorAll(".delete-note-btn").forEach(attachDeleteNoteHandler);
+
+    // 3. Submit Report Form
+    const reportForm = document.getElementById("reportContentForm");
+    if (reportForm) {
+        reportForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const category = document.getElementById("reportCategorySelect").value;
+            const description = document.getElementById("reportDescriptionInput").value.trim();
+
+            try {
+                const res = await fetch("/api/v1/reports/submit", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": window.getCSRFToken()
+                    },
+                    body: JSON.stringify({
+                        pdf_id: pdfId,
+                        category: category,
+                        description: description
+                    })
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById("reportContentModal"));
+                    if (modal) modal.hide();
+                    window.showToast(data.message, "success");
+                    reportForm.reset();
+                } else {
+                    window.showToast(data.error || "Failed to submit report.", "danger");
+                }
+            } catch(e) {
+                window.showToast("Network error.", "danger");
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

@@ -1,46 +1,119 @@
 {% extends "student/layout.html" %}
 
-{% block title %}Student Library - StudyHub V2{% endblock %}
+{% block title %}Explore Library - StudyHub V2{% endblock %}
 
 {% block student_content %}
-<!-- Welcome Banner -->
-<div class="card sh-card shadow-sm p-4 mb-4 border-0" style="background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%); color: #ffffff;">
+<!-- Welcome & Personalization Hero Banner -->
+<div class="card sh-card shadow-sm p-4 mb-4 border-0" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 60%, #06b6d4 100%); color: #ffffff;">
     <div class="row align-items-center">
         <div class="col-md-8">
             <span class="badge bg-white text-primary mb-2 px-3 py-1 fw-semibold">
-                <i class="bi bi-mortarboard me-1"></i> {{ current_user.tenant.tenant_name }}
+                <i class="bi bi-globe2 me-1"></i> Global Shared Educational Digital Library
             </span>
-            <h2 class="fw-bold mb-1">Welcome, {{ current_user.full_name }}!</h2>
-            <p class="mb-0 text-white-50">Explore published lecture notes, syllabus materials, and references curated by your instructors.</p>
+            <h2 class="fw-bold mb-1">Hello, {{ current_user.full_name }}!</h2>
+            <p class="mb-3 text-white-75">Explore thousands of open textbooks, lecture notes, syllabus materials, and past papers curated by verified educators worldwide.</p>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('student.interests') }}" class="btn btn-sm btn-light rounded-pill px-3 fw-semibold">
+                    <i class="bi bi-compass me-1 text-primary"></i> Personalize Interests
+                </a>
+                <a href="{{ url_for('student.search') }}" class="btn btn-sm btn-outline-light rounded-pill px-3">
+                    <i class="bi bi-search me-1"></i> Browse All Topics
+                </a>
+            </div>
         </div>
         <div class="col-md-4 text-end d-none d-md-block">
-            <i class="bi bi-book-half display-3 text-white-50"></i>
+            <i class="bi bi-mortarboard-fill display-1 text-white-50"></i>
         </div>
     </div>
 </div>
 
-<!-- Subjects Section -->
+<!-- Platform Announcements Banner -->
+{% if announcements %}
+<div class="card sh-card shadow-sm p-3 mb-4 border-start border-4 border-primary">
+    <div class="d-flex align-items-center justify-content-between mb-2">
+        <h6 class="fw-bold mb-0 text-primary"><i class="bi bi-megaphone-fill me-2"></i>Campus & Platform Announcements</h6>
+        <a href="{{ url_for('student.notifications') }}" class="small text-decoration-none">View All</a>
+    </div>
+    <div class="row g-2">
+        {% for a in announcements %}
+        <div class="col-md-4">
+            <div class="p-2 bg-light rounded">
+                <div class="d-flex justify-content-between">
+                    <strong class="small text-truncate" style="max-width: 200px;">
+                        {% if a.is_pinned %}<i class="bi bi-pin-angle-fill text-danger me-1"></i>{% endif %}
+                        {{ a.title }}
+                    </strong>
+                    <small class="text-muted">{{ a.created_at.strftime('%b %d') }}</small>
+                </div>
+                <p class="small text-muted text-truncate mb-0 mt-1">{{ a.content }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Continue Reading Shelf -->
+{% if continue_reading %}
 <div class="mb-5">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h4 class="fw-bold mb-0"><i class="bi bi-collection text-primary me-2"></i>Curriculum Subjects</h4>
-        <span class="text-muted small">{{ subjects | length }} Active Subjects</span>
+        <h4 class="fw-bold mb-0"><i class="bi bi-clock-history text-primary me-2"></i>Continue Reading</h4>
+        <a href="{{ url_for('student.history') }}" class="small text-decoration-none">View Full History</a>
+    </div>
+    <div class="row g-3">
+        {% for m in continue_reading %}
+        <div class="col-md-6 col-lg-3">
+            <div class="card sh-card h-100 p-3 shadow-sm d-flex flex-column">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <i class="bi bi-file-earmark-pdf-fill text-danger fs-3"></i>
+                    <div class="text-truncate">
+                        <h6 class="fw-bold mb-0 text-truncate" title="{{ m.title }}">{{ m.title }}</h6>
+                        <small class="text-muted">{{ m.subject.subject_name }}</small>
+                    </div>
+                </div>
+                <div class="mt-auto pt-2 border-top d-flex justify-content-between align-items-center">
+                    <span class="badge bg-warning-subtle text-warning-emphasis">In Progress</span>
+                    <a href="{{ url_for('student.view_pdf', pdf_id=m.id) }}" class="btn btn-sm btn-primary rounded-pill px-3">
+                        Resume <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Recommended Subjects for User -->
+<div class="mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="fw-bold mb-0"><i class="bi bi-sparkles text-warning me-2"></i>Recommended Subjects for You</h4>
+            <span class="text-muted small">Personalized based on your academic interests</span>
+        </div>
+        <a href="{{ url_for('student.subjects_list') }}" class="small text-decoration-none">All Subjects &rarr;</a>
     </div>
 
     <div class="row g-4">
-        {% for s in subjects %}
-        <div class="col-md-6 col-lg-4 col-xl-3">
+        {% for s in recommended_subjects %}
+        <div class="col-md-6 col-lg-4">
             <div class="card sh-card sh-subject-card h-100 p-3 shadow-sm d-flex flex-column" onclick="window.location.href='{{ url_for('student.subject_detail', subject_id=s.id) }}'">
                 <div class="d-flex align-items-center gap-3 mb-3">
                     <div class="sh-stat-icon bg-primary-subtle text-primary">
                         <i class="bi {{ s.icon or 'bi-journal-bookmark' }} fs-4"></i>
                     </div>
                     <div>
-                        <h5 class="fw-bold mb-0 text-truncate" style="max-width: 170px;" title="{{ s.subject_name }}">{{ s.subject_name }}</h5>
+                        <h5 class="fw-bold mb-0 text-truncate" style="max-width: 220px;" title="{{ s.subject_name }}">{{ s.subject_name }}</h5>
+                        <div class="small text-muted">
+                            {% for c in s.categories[:2] %}
+                                <span class="badge bg-light text-secondary border me-1">{{ c.name }}</span>
+                            {% endfor %}
+                        </div>
                     </div>
                 </div>
 
-                <p class="text-muted small mb-4 flex-grow-1">
-                    {{ s.description or 'Course materials and syllabus chapters.' }}
+                <p class="text-muted small mb-3 flex-grow-1">
+                    {{ s.description or 'Course materials, lecture notes, and reference PDFs.' }}
                 </p>
 
                 <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-auto">
@@ -48,31 +121,33 @@
                         <i class="bi bi-file-earmark-pdf me-1"></i> {{ s.pdf_materials | selectattr('is_published') | list | length }} PDFs
                     </span>
                     <a href="{{ url_for('student.subject_detail', subject_id=s.id) }}" class="btn btn-sm btn-primary rounded-pill px-3">
-                        Open <i class="bi bi-arrow-right ms-1"></i>
+                        Explore <i class="bi bi-arrow-right ms-1"></i>
                     </a>
                 </div>
             </div>
         </div>
         {% else %}
-        <div class="col-12 text-center py-5">
-            <i class="bi bi-journal-x fs-1 text-muted mb-2"></i>
-            <h5 class="fw-bold">No Subjects Available Yet</h5>
-            <p class="text-muted small">Your administrator has not published any subjects for your library.</p>
+        <div class="col-12 text-center py-4 text-muted">
+            <p>No subjects published yet.</p>
         </div>
         {% endfor %}
     </div>
 </div>
 
-<div class="row g-4">
-    <!-- Latest Uploads -->
+<!-- Recommended PDFs & Popular in Shared Library -->
+<div class="row g-4 mb-5">
+    <!-- Recommended PDFs -->
     <div class="col-lg-6">
-        <div class="card sh-card shadow-sm p-3">
-            <h5 class="fw-bold mb-3"><i class="bi bi-sparkles text-warning me-2"></i>Latest Additions</h5>
+        <div class="card sh-card shadow-sm p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="bi bi-hand-thumbs-up-fill text-primary me-2"></i>Recommended Documents</h5>
+                <a href="{{ url_for('student.search') }}" class="small text-decoration-none">Search</a>
+            </div>
             <div class="list-group list-group-flush">
-                {% for m in recent_materials %}
+                {% for m in recommended_pdfs %}
                 <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-2 text-truncate me-2">
-                        <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+                        <i class="bi bi-file-earmark-pdf-fill text-danger fs-4"></i>
                         <div>
                             <a href="{{ url_for('student.view_pdf', pdf_id=m.id) }}" class="fw-semibold text-decoration-none text-body text-truncate d-block" style="max-width: 280px;">
                                 {{ m.title }}
@@ -84,43 +159,66 @@
                         <a href="{{ url_for('student.view_pdf', pdf_id=m.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-2">
                             View
                         </a>
-                        <a href="{{ url_for('student.download_pdf', pdf_id=m.id) }}" class="btn btn-sm btn-light rounded-pill px-2">
+                        <a href="{{ url_for('student.download_pdf', pdf_id=m.id) }}" class="btn btn-sm btn-light rounded-pill px-2" title="Download">
                             <i class="bi bi-download"></i>
                         </a>
                     </div>
                 </div>
                 {% else %}
-                <div class="text-center py-3 text-muted small">No recent materials uploaded.</div>
+                <div class="text-center py-4 text-muted small">No recommended PDFs available yet.</div>
                 {% endfor %}
             </div>
         </div>
     </div>
 
-    <!-- Recently Viewed & Bookmarks Preview -->
+    <!-- Popular Materials in Global Library -->
     <div class="col-lg-6">
-        <div class="card sh-card shadow-sm p-3">
-            <h5 class="fw-bold mb-3"><i class="bi bi-clock-history text-info me-2"></i>Recently Viewed</h5>
+        <div class="card sh-card shadow-sm p-3 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold mb-0"><i class="bi bi-fire text-danger me-2"></i>Most Popular in Shared Library</h5>
+                <a href="{{ url_for('student.search', sort_by='popular') }}" class="small text-decoration-none">Top Charts</a>
+            </div>
             <div class="list-group list-group-flush">
-                {% for m in history %}
+                {% for m in popular_materials %}
                 <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
                     <div class="d-flex align-items-center gap-2 text-truncate me-2">
-                        <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+                        <i class="bi bi-file-earmark-pdf-fill text-danger fs-4"></i>
                         <div>
                             <a href="{{ url_for('student.view_pdf', pdf_id=m.id) }}" class="fw-semibold text-decoration-none text-body text-truncate d-block" style="max-width: 280px;">
                                 {{ m.title }}
                             </a>
-                            <span class="small text-muted">{{ m.subject.subject_name }}</span>
+                            <span class="small text-muted">{{ m.subject.subject_name }} &bull; <i class="bi bi-download"></i> {{ m.download_count }}</span>
                         </div>
                     </div>
-                    <a href="{{ url_for('student.view_pdf', pdf_id=m.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-2">
-                        Resume
-                    </a>
+                    <div class="d-flex gap-1">
+                        <a href="{{ url_for('student.view_pdf', pdf_id=m.id) }}" class="btn btn-sm btn-outline-primary rounded-pill px-2">
+                            View
+                        </a>
+                        <a href="{{ url_for('student.download_pdf', pdf_id=m.id) }}" class="btn btn-sm btn-light rounded-pill px-2" title="Download">
+                            <i class="bi bi-download"></i>
+                        </a>
+                    </div>
                 </div>
                 {% else %}
-                <div class="text-center py-3 text-muted small">You haven't opened any PDFs yet.</div>
+                <div class="text-center py-4 text-muted small">No materials uploaded yet.</div>
                 {% endfor %}
             </div>
         </div>
     </div>
 </div>
+
+<!-- Explore by Category Badges -->
+{% if categories %}
+<div class="card sh-card shadow-sm p-4">
+    <h5 class="fw-bold mb-3"><i class="bi bi-grid text-primary me-2"></i>Explore by Category</h5>
+    <div class="d-flex flex-wrap gap-2">
+        {% for c in categories %}
+        <a href="{{ url_for('student.subjects_list', category_id=c.id) }}" class="btn btn-outline-secondary rounded-pill btn-sm px-3 py-2">
+            <i class="bi {{ c.icon }} me-1 text-primary"></i> {{ c.name }}
+            <span class="badge bg-secondary ms-1">{{ c.subjects | length }}</span>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 {% endblock %}

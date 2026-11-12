@@ -1,0 +1,123 @@
+{% extends "student/layout.html" %}
+
+{% block title %}Notifications & Announcements - StudyHub V2{% endblock %}
+
+{% block student_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-bell-fill text-primary me-2"></i>Notifications & Announcements</h3>
+        <p class="text-muted small mb-0">Platform updates, system alerts, and instructor announcements</p>
+    </div>
+    {% if notifications %}
+    <button class="btn btn-outline-secondary btn-sm rounded-pill px-3 shadow-sm" id="btnMarkAllRead">
+        <i class="bi bi-check2-all me-1"></i> Mark All as Read
+    </button>
+    {% endif %}
+</div>
+
+<div class="row g-4">
+    <!-- User In-App Notifications -->
+    <div class="col-lg-7">
+        <div class="card sh-card shadow-sm p-3">
+            <h5 class="fw-bold mb-3">Your Alerts</h5>
+            {% if notifications %}
+                <div class="list-group list-group-flush">
+                    {% for n in notifications %}
+                    <div class="list-group-item px-3 py-3 border-bottom {% if not n.is_read %}bg-light border-start border-4 border-primary{% endif %}" id="notifRow{{ n.id }}">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h6 class="fw-bold mb-1">{{ n.title }}</h6>
+                                <p class="small text-secondary mb-1">{{ n.message }}</p>
+                                <small class="text-muted">{{ n.created_at.strftime('%b %d, %Y %H:%M') }}</small>
+                            </div>
+                            {% if not n.is_read %}
+                                <button class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0 mark-read-btn" data-notif-id="{{ n.id }}" title="Mark read">
+                                    <i class="bi bi-check"></i>
+                                </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-bell-slash fs-1 text-secondary mb-2"></i>
+                    <p class="small mb-0">You have no new notifications.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Campus / Platform Announcements -->
+    <div class="col-lg-5">
+        <div class="card sh-card shadow-sm p-3">
+            <h5 class="fw-bold mb-3"><i class="bi bi-megaphone-fill text-danger me-2"></i>Broadcast Announcements</h5>
+            {% if announcements %}
+                <div class="list-group list-group-flush">
+                    {% for a in announcements %}
+                    <div class="list-group-item px-0 py-3">
+                        <div class="d-flex justify-content-between">
+                            <h6 class="fw-bold mb-1">
+                                {% if a.is_pinned %}<i class="bi bi-pin-angle-fill text-danger me-1"></i>{% endif %}
+                                {{ a.title }}
+                            </h6>
+                            <small class="text-muted">{{ a.created_at.strftime('%b %d') }}</small>
+                        </div>
+                        <p class="small text-muted mb-0" style="white-space: pre-line;">{{ a.content }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4 text-muted small">No active announcements.</div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // Single mark read
+    document.querySelectorAll(".mark-read-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+            const notifId = btn.getAttribute("data-notif-id");
+            try {
+                const res = await fetch(`/api/v1/notifications/${notifId}/read`, {
+                    method: "POST",
+                    headers: { "X-CSRFToken": window.getCSRFToken() }
+                });
+                if (res.ok) {
+                    const row = document.getElementById(`notifRow${notifId}`);
+                    if (row) {
+                        row.classList.remove("bg-light", "border-start", "border-4", "border-primary");
+                        btn.remove();
+                    }
+                    window.showToast("Marked as read.", "info");
+                }
+            } catch (e) {
+                window.showToast("Failed to mark as read.", "danger");
+            }
+        });
+    });
+
+    // Mark all read
+    const btnMarkAll = document.getElementById("btnMarkAllRead");
+    if (btnMarkAll) {
+        btnMarkAll.addEventListener("click", async () => {
+            try {
+                const res = await fetch("/api/v1/notifications/read-all", {
+                    method: "POST",
+                    headers: { "X-CSRFToken": window.getCSRFToken() }
+                });
+                if (res.ok) {
+                    window.location.reload();
+                }
+            } catch (e) {
+                window.showToast("Network error.", "danger");
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -20,7 +20,7 @@ def create_app(config_name=None):
     csrf.init_app(app)
     limiter.init_app(app)
 
-    # Exempt public health check from CSRF
+    # Exempt public health check and API endpoints where CSRF token might be sent in header or handled
     from studyhub.blueprints.api import healthz
     csrf.exempt(healthz)
 
@@ -32,16 +32,16 @@ def create_app(config_name=None):
     from studyhub.blueprints.api import api_bp
 
     app.register_blueprint(auth_bp, url_prefix="/auth")
-    app.register_blueprint(owner_bp)
-    app.register_blueprint(admin_bp)
-    app.register_blueprint(student_bp)
-    app.register_blueprint(api_bp)
+    app.register_blueprint(owner_bp)       # /main-admin
+    app.register_blueprint(admin_bp)       # /admin
+    app.register_blueprint(student_bp)     # /student
+    app.register_blueprint(api_bp)         # /api/v1
 
     # Root redirect
     @app.route("/")
     def index():
         if current_user.is_authenticated:
-            if current_user.is_platform_owner():
+            if current_user.is_main_admin():
                 return redirect(url_for("owner.dashboard"))
             elif current_user.is_admin():
                 return redirect(url_for("admin.dashboard"))
@@ -49,10 +49,34 @@ def create_app(config_name=None):
                 return redirect(url_for("student.dashboard"))
         return redirect(url_for("auth.login"))
 
-    # Direct healthz root alias for Render
+    # Backward compatibility redirect for /owner -> /main-admin
+    @app.route("/owner/<path:subpath>")
+    @app.route("/owner")
+    def owner_legacy_redirect(subpath="dashboard"):
+        return redirect(f"/main-admin/{subpath}")
+
+    # Alias /user -> /student
+    @app.route("/user/<path:subpath>")
+    @app.route("/user")
+    def user_alias_redirect(subpath="dashboard"):
+        return redirect(f"/student/{subpath}")
+
+    # Direct healthz root alias for Render Free / monitoring
     @app.route("/healthz")
     def root_healthz():
-        return jsonify({"status": "ok", "app": "StudyHub V2"}), 200
+        return jsonify({"status": "ok", "app": "StudyHub V2", "architecture": "Shared Global Library"}), 200
+
+    # Context processor for notifications and global badge counts
+    @app.context_processor
+    def inject_global_template_vars():
+        if current_user.is_authenticated:
+            try:
+                from studyhub.services.communication_service import CommunicationService
+                unreads = len(CommunicationService.get_user_notifications(current_user.id, unread_only=True, limit=10))
+                return {"unread_notifications_count": unreads}
+            except Exception:
+                return {"unread_notifications_count": 0}
+        return {"unread_notifications_count": 0}
 
     # Custom Jinja filters
     @app.template_filter("filesizeformat")

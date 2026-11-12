@@ -5,10 +5,10 @@ from sqlalchemy.orm import Mapped, mapped_column
 from studyhub.extensions import db
 
 class AuditLog(db.Model):
+    """Platform audit log for security, administrative actions, and moderation."""
     __tablename__ = "audit_logs"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    tenant_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     actor_user_id: Mapped[str | None] = mapped_column(String(36), nullable=True, index=True)
     action: Mapped[str] = mapped_column(String(100), nullable=False)
     target_type: Mapped[str | None] = mapped_column(String(50), nullable=True)
@@ -18,15 +18,15 @@ class AuditLog(db.Model):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False, index=True)
 
     __table_args__ = (
-        Index("ix_audit_tenant_action", "tenant_id", "action"),
-        Index("ix_audit_created_at", "created_at"),
+        Index("ix_audit_action_created", "action", "created_at"),
     )
 
     def __repr__(self) -> str:
-        return f"<AuditLog action={self.action} actor={self.actor_user_id} tenant={self.tenant_id}>"
+        return f"<AuditLog action={self.action} actor={self.actor_user_id}>"
 
 
 class SystemSetting(db.Model):
+    """Global system configuration."""
     __tablename__ = "system_settings"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))

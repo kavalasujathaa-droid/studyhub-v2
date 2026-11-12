@@ -21,22 +21,36 @@
                 <span>StudyHub <span class="navbar-brand-badge bg-primary text-white">V2</span></span>
             </a>
 
+            <!-- Quick Global Search in Header -->
+            {% if current_user.is_authenticated %}
+            <div class="d-none d-lg-block ms-4" style="width: 320px;">
+                <form action="{{ url_for('student.search') }}" method="GET" class="position-relative">
+                    <input type="search" name="q" class="form-control form-control-sm rounded-pill ps-4" placeholder="Search shared library...">
+                    <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-2 text-muted small"></i>
+                </form>
+            </div>
+            {% endif %}
+
             <!-- Navbar Actions -->
             <div class="d-flex align-items-center gap-3 ms-auto">
                 {% if current_user.is_authenticated %}
-                    {% if current_user.tenant and current_user.tenant.tenant_name %}
-                        <span class="badge bg-secondary-subtle text-secondary-emphasis d-none d-md-inline-block">
-                            <i class="bi bi-building me-1"></i>{{ current_user.tenant.tenant_name }}
-                        </span>
-                    {% endif %}
-                    
-                    <span class="badge {% if current_user.is_platform_owner() %}badge-role-owner{% elif current_user.is_admin() %}badge-role-admin{% else %}badge-role-student{% endif %}">
-                        {{ current_user.role | replace('_', ' ') | title }}
+                    <span class="badge {% if current_user.is_main_admin() %}badge-role-owner{% elif current_user.is_admin() %}badge-role-admin{% else %}badge-role-student{% endif %}">
+                        {% if current_user.is_main_admin() %}Main Admin{% elif current_user.is_admin() %}Admin Contributor{% else %}Learner{% endif %}
                     </span>
 
                     <span class="fw-semibold text-truncate d-none d-sm-inline-block" style="max-width: 150px;">
                         {{ current_user.full_name }}
                     </span>
+
+                    <!-- In-App Notifications -->
+                    <a href="{{ url_for('student.notifications') }}" class="btn btn-outline-secondary btn-sm rounded-circle p-2 position-relative" title="Notifications">
+                        <i class="bi bi-bell-fill"></i>
+                        {% if unread_notifications_count > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
+                                {{ unread_notifications_count }}
+                            </span>
+                        {% endif %}
+                    </a>
                 {% endif %}
 
                 <!-- Dark / Light Mode Toggle Button -->
@@ -52,6 +66,13 @@
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                             <li><span class="dropdown-item-text text-muted small">Signed in as <strong>{{ current_user.username }}</strong></span></li>
                             <li><hr class="dropdown-divider"></li>
+                            {% if current_user.is_main_admin() %}
+                                <li><a class="dropdown-item" href="{{ url_for('owner.dashboard') }}"><i class="bi bi-shield-lock me-2 text-primary"></i>Main Admin Console</a></li>
+                            {% elif current_user.is_admin() %}
+                                <li><a class="dropdown-item" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer2 me-2 text-primary"></i>Admin Portal</a></li>
+                            {% endif %}
+                            <li><a class="dropdown-item" href="{{ url_for('student.dashboard') }}"><i class="bi bi-journal-bookmark me-2 text-success"></i>Shared Library</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('student.interests') }}"><i class="bi bi-compass me-2 text-info"></i>My Learning Interests</a></li>
                             <li><a class="dropdown-item" href="{{ url_for('auth.change_password') }}"><i class="bi bi-key me-2"></i>Change Password</a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Log Out</a></li>

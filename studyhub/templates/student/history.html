@@ -1,11 +1,11 @@
 {% extends "student/layout.html" %}
 
-{% block title %}Recently Viewed - StudyHub V2{% endblock %}
+{% block title %}Reading History - StudyHub V2{% endblock %}
 
 {% block student_content %}
 <div class="mb-4">
-    <h3 class="fw-bold mb-1"><i class="bi bi-clock-history text-info me-2"></i>Reading History</h3>
-    <p class="text-muted small mb-0">PDF materials recently viewed in your session</p>
+    <h3 class="fw-bold mb-1"><i class="bi bi-clock-history text-info me-2"></i>Reading History & Progress</h3>
+    <p class="text-muted small mb-0">Track your progress, last viewed pages, and status across all documents</p>
 </div>
 
 <div class="card sh-card shadow-sm p-3">
@@ -15,33 +15,50 @@
                 <tr>
                     <th>Document</th>
                     <th>Subject & Title</th>
-                    <th>Size</th>
+                    <th>Status</th>
+                    <th>Last Page</th>
+                    <th>Views</th>
+                    <th>Last Opened</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
-                {% for m in history %}
+                {% for item in history %}
+                {% set m = item.pdf %}
                 <tr>
                     <td>
                         <div class="d-flex align-items-center gap-2">
                             <i class="bi bi-file-earmark-pdf-fill text-danger fs-4"></i>
                             <div>
-                                <span class="fw-semibold">{{ m.title }}</span>
+                                <span class="fw-semibold text-truncate d-inline-block" style="max-width: 250px;">{{ m.title }}</span>
                                 <div class="small text-muted">{{ m.original_filename }}</div>
                             </div>
                         </div>
                     </td>
                     <td>
                         <div class="small fw-semibold">{{ m.subject.subject_name }}</div>
-                        <div class="small text-muted">{{ m.title_ref.title_name }}</div>
+                        <div class="small text-muted">{{ m.title_ref.title_name if m.title_ref else '-' }}</div>
                     </td>
-                    <td>{{ m.file_size | filesizeformat }}</td>
+                    <td>
+                        <span class="badge {% if item.reading_status == 'completed' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                            {{ item.reading_status | replace('_', ' ') | title }}
+                        </span>
+                    </td>
+                    <td class="small fw-semibold">
+                        Page {{ item.last_page }}
+                    </td>
+                    <td class="small text-muted">
+                        {{ item.view_count }} times
+                    </td>
+                    <td class="small text-muted">
+                        {{ item.last_viewed_at.strftime('%b %d, %H:%M') }}
+                    </td>
                     <td>
                         <div class="d-flex gap-2">
                             <a href="{{ url_for('student.view_pdf', pdf_id=m.id) }}" class="btn btn-sm btn-primary rounded-pill px-3">
-                                Re-open
+                                Resume
                             </a>
-                            <a href="{{ url_for('student.download_pdf', pdf_id=m.id) }}" class="btn btn-sm btn-outline-secondary rounded-pill px-2">
+                            <a href="{{ url_for('student.download_pdf', pdf_id=m.id) }}" class="btn btn-sm btn-outline-secondary rounded-pill px-2" title="Download">
                                 <i class="bi bi-download"></i>
                             </a>
                         </div>
@@ -49,7 +66,10 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="4" class="text-center py-4 text-muted">No viewing history recorded yet.</td>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="bi bi-book fs-2 text-secondary"></i>
+                        <p class="mt-2 mb-0">No reading history recorded yet. Open a document to start reading!</p>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

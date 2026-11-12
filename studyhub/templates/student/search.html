@@ -1,22 +1,59 @@
 {% extends "student/layout.html" %}
 
-{% block title %}Search Results for "{{ query }}" - StudyHub V2{% endblock %}
+{% block title %}Search & Discovery - StudyHub V2{% endblock %}
 
 {% block student_content %}
 <div class="mb-4">
-    <h3 class="fw-bold mb-1"><i class="bi bi-search text-primary me-2"></i>Search Results</h3>
-    <p class="text-muted small mb-0">Showing matching documents for "<strong>{{ query }}</strong>"</p>
+    <h3 class="fw-bold mb-1"><i class="bi bi-search text-primary me-2"></i>Shared Library Search & Discovery</h3>
+    <p class="text-muted small mb-0">Search textbooks, syllabus materials, and past papers across all subjects</p>
 </div>
 
-<div class="row g-4">
+<!-- Search & Filter Form -->
+<div class="card sh-card shadow-sm p-3 mb-4">
+    <form method="GET" action="{{ url_for('student.search') }}" class="row g-2">
+        <div class="col-md-5">
+            <div class="input-group">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" name="q" class="form-control" placeholder="Search keywords in title, description, subject..." value="{{ query or '' }}">
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <select name="category_id" class="form-select">
+                <option value="">-- All Categories --</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if selected_category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-2">
+            <select name="sort_by" class="form-select">
+                <option value="recent" {% if selected_sort_by == 'recent' %}selected{% endif %}>Most Recent</option>
+                <option value="popular" {% if selected_sort_by == 'popular' %}selected{% endif %}>Most Popular</option>
+                <option value="alphabetical" {% if selected_sort_by == 'alphabetical' %}selected{% endif %}>Alphabetical</option>
+            </select>
+        </div>
+
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+            {% if query or selected_category_id or selected_sort_by != 'recent' %}
+                <a href="{{ url_for('student.search') }}" class="btn btn-outline-secondary">Reset</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Results Grid -->
+<div class="row g-4 mb-4">
     {% for m in results %}
     <div class="col-md-6 col-lg-4">
         <div class="card sh-card p-3 shadow-sm h-100 d-flex flex-column">
             <div class="d-flex align-items-center gap-2 mb-2">
                 <i class="bi bi-file-earmark-pdf-fill text-danger fs-3"></i>
-                <div>
+                <div class="text-truncate">
                     <h6 class="fw-bold mb-0 text-truncate" style="max-width: 220px;" title="{{ m.title }}">{{ m.title }}</h6>
-                    <span class="small text-muted">{{ m.subject.subject_name }} &bull; {{ m.title_ref.title_name }}</span>
+                    <span class="small text-muted">{{ m.subject.subject_name }} &bull; {{ m.title_ref.title_name if m.title_ref else '' }}</span>
                 </div>
             </div>
 
@@ -24,23 +61,56 @@
                 {{ m.description or 'Course reference document.' }}
             </p>
 
+            <div class="mb-3">
+                {% if m.language %}<span class="badge bg-light text-secondary border small me-1">{{ m.language }}</span>{% endif %}
+                {% if m.academic_year %}<span class="badge bg-light text-secondary border small me-1">{{ m.academic_year }}</span>{% endif %}
+                <span class="badge bg-light text-muted small"><i class="bi bi-download me-1"></i>{{ m.download_count }}</span>
+            </div>
+
             <div class="border-top pt-3 mt-auto d-flex gap-2">
                 <a href="{{ url_for('student.view_pdf', pdf_id=m.id) }}" class="btn btn-primary btn-sm rounded-pill flex-grow-1">
                     <i class="bi bi-eye me-1"></i> View Online
                 </a>
-                <a href="{{ url_for('student.download_pdf', pdf_id=m.id) }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                <a href="{{ url_for('student.download_pdf', pdf_id=m.id) }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3" title="Download PDF">
                     <i class="bi bi-download"></i>
                 </a>
             </div>
         </div>
     </div>
     {% else %}
-    <div class="col-12 text-center py-5">
-        <i class="bi bi-search fs-1 text-muted mb-2"></i>
-        <h5 class="fw-bold">No Matching Documents</h5>
-        <p class="text-muted small">No published documents matched "{{ query }}" in your library.</p>
-        <a href="{{ url_for('student.dashboard') }}" class="btn btn-primary rounded-pill px-4">Back to Catalog</a>
+    <div class="col-12 text-center py-5 text-muted">
+        <i class="bi bi-search fs-1 mb-2"></i>
+        <h5 class="fw-bold">No Matching Documents Found</h5>
+        <p class="small">Try using different search terms or resetting filters.</p>
+        <a href="{{ url_for('student.dashboard') }}" class="btn btn-primary rounded-pill px-4">Back to Dashboard</a>
     </div>
     {% endfor %}
 </div>
+
+<!-- Pagination Controls -->
+{% if pagination and pagination.pages > 1 %}
+<nav aria-label="Search results pages">
+    <ul class="pagination justify-content-center">
+        {% if pagination.has_prev %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('student.search', page=pagination.prev_num, q=query, category_id=selected_category_id, sort_by=selected_sort_by) }}">Previous</a>
+            </li>
+        {% endif %}
+        {% for p in pagination.iter_pages() %}
+            {% if p %}
+                <li class="page-item {% if p == pagination.page %}active{% endif %}">
+                    <a class="page-link" href="{{ url_for('student.search', page=p, q=query, category_id=selected_category_id, sort_by=selected_sort_by) }}">{{ p }}</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled"><span class="page-link">&hellip;</span></li>
+            {% endif %}
+        {% endfor %}
+        {% if pagination.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="{{ url_for('student.search', page=pagination.next_num, q=query, category_id=selected_category_id, sort_by=selected_sort_by) }}">Next</a>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
 {% endblock %}

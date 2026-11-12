@@ -3,10 +3,30 @@
 {% block title %}My Bookmarks - StudyHub V2{% endblock %}
 
 {% block student_content %}
-<div class="mb-4">
-    <h3 class="fw-bold mb-1"><i class="bi bi-bookmark-fill text-warning me-2"></i>My Bookmarked Documents</h3>
-    <p class="text-muted small mb-0">Quickly access textbooks and notes saved for revision</p>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1"><i class="bi bi-bookmark-fill text-warning me-2"></i>My Bookmarked Documents</h3>
+        <p class="text-muted small mb-0">Organize and quickly access textbooks and lecture notes saved for revision</p>
+    </div>
+    <button class="btn btn-outline-primary btn-sm rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#createCollectionModal">
+        <i class="bi bi-folder-plus me-1"></i> New Collection
+    </button>
 </div>
+
+<!-- Collections Filter Pills -->
+{% if collections %}
+<div class="d-flex flex-wrap gap-2 mb-4 align-items-center">
+    <span class="small fw-bold text-muted me-2"><i class="bi bi-collection"></i> Collection:</span>
+    <a href="{{ url_for('student.bookmarks') }}" class="btn btn-sm {% if not selected_collection_id %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+        All Bookmarks
+    </a>
+    {% for col in collections %}
+    <a href="{{ url_for('student.bookmarks', collection_id=col.id) }}" class="btn btn-sm {% if selected_collection_id == col.id %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+        <i class="bi bi-folder me-1"></i>{{ col.name }}
+    </a>
+    {% endfor %}
+</div>
+{% endif %}
 
 <div class="row g-4">
     {% for m in bookmarks %}
@@ -42,10 +62,72 @@
     {% else %}
     <div class="col-12 text-center py-5">
         <i class="bi bi-bookmark-x fs-1 text-muted mb-2"></i>
-        <h5 class="fw-bold">No Bookmarks Saved</h5>
+        <h5 class="fw-bold">No Bookmarks in this Collection</h5>
         <p class="text-muted small">You haven't bookmarked any materials yet. Click the bookmark icon on any document to save it here.</p>
         <a href="{{ url_for('student.dashboard') }}" class="btn btn-primary rounded-pill px-4">Browse Catalog</a>
     </div>
     {% endfor %}
 </div>
+
+<!-- Create Collection Modal -->
+<div class="modal fade" id="createCollectionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="createCollectionForm">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold">Create Bookmark Collection</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Collection Name</label>
+                        <input type="text" id="collectionNameInput" class="form-control" placeholder="e.g. Midterm Prep, Formulas, Research" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Description (optional)</label>
+                        <input type="text" id="collectionDescInput" class="form-control" placeholder="Brief note about this collection...">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Collection</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const colForm = document.getElementById("createCollectionForm");
+    if (colForm) {
+        colForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const name = document.getElementById("collectionNameInput").value.trim();
+            const desc = document.getElementById("collectionDescInput").value.trim();
+
+            try {
+                const res = await fetch("/api/v1/bookmark-collections", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": window.getCSRFToken()
+                    },
+                    body: JSON.stringify({ name: name, description: desc })
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    window.location.reload();
+                } else {
+                    window.showToast(data.error || "Failed to create collection.", "danger");
+                }
+            } catch (err) {
+                window.showToast("Network error.", "danger");
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

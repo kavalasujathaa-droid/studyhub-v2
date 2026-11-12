@@ -1,0 +1,115 @@
+{% extends "owner/layout.html" %}
+
+{% block title %}Recovery Vault - StudyHub V2{% endblock %}
+
+{% block owner_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Soft-Delete Recovery Vault</h3>
+        <p class="text-muted small mb-0">Recover subjects, playlists, and PDF materials accidentally removed by administrators</p>
+    </div>
+</div>
+
+<ul class="nav nav-pills mb-4" id="recoveryTabs" role="tablist">
+    <li class="nav-item">
+        <button class="nav-link active rounded-pill px-4" id="pdfs-tab" data-bs-toggle="pill" data-bs-target="#deletedPdfs">
+            <i class="bi bi-file-earmark-pdf me-1"></i> Deleted PDFs ({{ pdfs | length }})
+        </button>
+    </li>
+    <li class="nav-item">
+        <button class="nav-link rounded-pill px-4" id="subjects-tab" data-bs-toggle="pill" data-bs-target="#deletedSubjects">
+            <i class="bi bi-journal-bookmark me-1"></i> Deleted Subjects ({{ subjects | length }})
+        </button>
+    </li>
+</ul>
+
+<div class="tab-content" id="recoveryTabsContent">
+    <!-- Deleted PDFs Pane -->
+    <div class="tab-pane fade show active" id="deletedPdfs">
+        <div class="card sh-card shadow-sm p-3">
+            {% if pdfs %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Material Title</th>
+                                <th>Subject / Title</th>
+                                <th>Size</th>
+                                <th>Deleted Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pdf in pdfs %}
+                            <tr>
+                                <td class="fw-bold">{{ pdf.title }}</td>
+                                <td class="small text-muted">{{ pdf.subject.subject_name if pdf.subject else '-' }} / {{ pdf.title_obj.title_name if pdf.title_obj else '-' }}</td>
+                                <td class="small">{{ pdf.file_size | filesizeformat }}</td>
+                                <td class="small text-muted">{{ pdf.deleted_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('owner.restore_pdf', pdf_id=pdf.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i> Restore PDF
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-recycle fs-1 text-secondary"></i>
+                    <p class="mt-2">No deleted PDF materials in vault.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Deleted Subjects Pane -->
+    <div class="tab-pane fade" id="deletedSubjects">
+        <div class="card sh-card shadow-sm p-3">
+            {% if subjects %}
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Subject Name</th>
+                                <th>Titles</th>
+                                <th>PDFs</th>
+                                <th>Deleted Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for sub in subjects %}
+                            <tr>
+                                <td class="fw-bold">{{ sub.subject_name }}</td>
+                                <td>{{ sub.titles | length }}</td>
+                                <td>{{ sub.pdf_materials | length }}</td>
+                                <td class="small text-muted">{{ sub.deleted_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td>
+                                    <form method="POST" action="{{ url_for('owner.restore_subject', subject_id=sub.id) }}">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                        <button type="submit" class="btn btn-sm btn-outline-success rounded-pill px-3">
+                                            <i class="bi bi-arrow-counterclockwise me-1"></i> Restore Subject
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5 text-muted">
+                    <i class="bi bi-recycle fs-1 text-secondary"></i>
+                    <p class="mt-2">No deleted subjects in vault.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

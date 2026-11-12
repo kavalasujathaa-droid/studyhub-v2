@@ -5,8 +5,8 @@
 {% block owner_content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h3 class="fw-bold mb-1">Administrators</h3>
-        <p class="text-muted small mb-0">Create and manage institutional library administrators</p>
+        <h3 class="fw-bold mb-1">Platform Administrators</h3>
+        <p class="text-muted small mb-0">Create, activate/deactivate, and manage institutional administrators contributing to the shared library</p>
     </div>
     <button class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#createAdminModal">
         <i class="bi bi-person-plus-fill me-1"></i> Add Administrator
@@ -21,7 +21,6 @@
                     <th>Full Name</th>
                     <th>Username</th>
                     <th>Email</th>
-                    <th>Institution Tenant</th>
                     <th>Status</th>
                     <th>Last Login</th>
                     <th>Actions</th>
@@ -34,26 +33,29 @@
                     <td><code>{{ admin.username }}</code></td>
                     <td>{{ admin.email }}</td>
                     <td>
-                        {% if admin.tenant %}
-                            <span class="badge bg-secondary-subtle text-secondary-emphasis">
-                                {{ admin.tenant.tenant_name }}
-                            </span>
-                        {% else %}
-                            <span class="text-muted">None</span>
-                        {% endif %}
-                    </td>
-                    <td>
                         <span class="badge {% if admin.is_active %}bg-success{% else %}bg-danger{% endif %}">
-                            {{ 'Active' if admin.is_active else 'Disabled' }}
+                            {{ 'Active' if admin.is_active else 'Deactivated' }}
                         </span>
                     </td>
                     <td class="small text-muted">
                         {{ admin.last_login.strftime('%Y-%m-%d %H:%M') if admin.last_login else 'Never' }}
                     </td>
                     <td>
-                        <button class="btn btn-sm btn-outline-secondary rounded-pill" data-bs-toggle="modal" data-bs-target="#resetPasswordModal{{ admin.id }}">
-                            <i class="bi bi-key"></i> Reset Password
-                        </button>
+                        <div class="d-flex gap-2">
+                            <!-- Toggle Active/Deactive -->
+                            <form method="POST" action="{{ url_for('owner.toggle_admin_status', admin_id=admin.id) }}" class="d-inline">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <button type="submit" class="btn btn-sm {% if admin.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %} rounded-pill px-2" title="{{ 'Deactivate' if admin.is_active else 'Activate' }}">
+                                    <i class="bi {% if admin.is_active %}bi-pause-fill{% else %}bi-play-fill{% endif %}"></i>
+                                    {{ 'Suspend' if admin.is_active else 'Activate' }}
+                                </button>
+                            </form>
+
+                            <!-- Reset Password -->
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-2" data-bs-toggle="modal" data-bs-target="#resetPasswordModal{{ admin.id }}">
+                                <i class="bi bi-key"></i> Reset Password
+                            </button>
+                        </div>
 
                         <!-- Reset Password Modal -->
                         <div class="modal fade" id="resetPasswordModal{{ admin.id }}" tabindex="-1">
@@ -66,10 +68,10 @@
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
                                         <div class="modal-body">
-                                            <p class="small text-muted">Assign a temporary password. The administrator will be forced to update it upon login.</p>
+                                            <p class="small text-muted">Assign a temporary password. The administrator will be required to change it on their next login.</p>
                                             <div class="mb-3">
                                                 <label class="form-label small fw-semibold">New Temporary Password</label>
-                                                <input type="password" name="new_password" class="form-control" required minlength="8">
+                                                <input type="password" name="new_password" class="form-control" required minlength="8" placeholder="At least 8 characters">
                                             </div>
                                         </div>
                                         <div class="modal-footer">
@@ -84,7 +86,7 @@
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="7" class="text-center py-4 text-muted">No administrators created yet.</td>
+                    <td colspan="6" class="text-center py-4 text-muted">No administrators created yet.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -94,53 +96,37 @@
 
 <!-- Create Admin Modal -->
 <div class="modal fade" id="createAdminModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog">
         <div class="modal-content">
             <form method="POST" action="{{ url_for('owner.admins') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold"><i class="bi bi-building-add me-2 text-primary"></i>Provision New Institution Tenant & Admin</h5>
+                    <h5 class="modal-title fw-bold">Provision New Administrator</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="alert alert-info py-2 small">
-                        <i class="bi bi-info-circle me-1"></i>
-                        This creates a brand new, completely isolated tenant library and provisions its dedicated administrator.
-                    </div>
-                    
-                    <h6 class="fw-bold mb-3 text-primary">1. Tenant / Library Information</h6>
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Library / Institution Name</label>
-                        <input type="text" name="tenant_name" class="form-control" placeholder="e.g. Apex Engineering College" required>
+                        <label class="form-label small fw-semibold">Full Name</label>
+                        <input type="text" name="full_name" class="form-control" placeholder="Dr. Jane Smith" required>
                     </div>
-
-                    <h6 class="fw-bold mt-4 mb-3 text-primary">2. Administrator Credentials</h6>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label small fw-semibold">Administrator Full Name</label>
-                            <input type="text" name="admin_full_name" class="form-control" placeholder="e.g. Prof. Alan Turing" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
                             <label class="form-label small fw-semibold">Username</label>
-                            <input type="text" name="username" class="form-control" placeholder="e.g. aturing_admin" required>
+                            <input type="text" name="username" class="form-control" placeholder="janesmith" required>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label small fw-semibold">Email</label>
+                            <input type="email" name="email" class="form-control" placeholder="jane@university.edu" required>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label small fw-semibold">Email Address</label>
-                            <input type="email" name="email" class="form-control" placeholder="admin@apex.edu" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label small fw-semibold">Temporary Password</label>
-                            <input type="password" name="password" class="form-control" placeholder="••••••••" required minlength="8">
-                        </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">Initial Password</label>
+                        <input type="password" name="password" class="form-control" placeholder="Minimum 8 characters" minlength="8" required>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary fw-semibold">
-                        <i class="bi bi-check-lg me-1"></i> Provision Tenant & Administrator
-                    </button>
+                    <button type="submit" class="btn btn-primary">Create Administrator</button>
                 </div>
             </form>
         </div>

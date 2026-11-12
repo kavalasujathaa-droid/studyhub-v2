@@ -1,0 +1,86 @@
+{% extends "student/layout.html" %}
+
+{% block title %}All Subjects - StudyHub V2{% endblock %}
+
+{% block student_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Shared Global Curriculum Subjects</h3>
+        <p class="text-muted small mb-0">Browse all open subjects and lecture playlists contributed by verified educators</p>
+    </div>
+</div>
+
+<!-- Category Filter Pills & Search -->
+<div class="card sh-card shadow-sm p-3 mb-4">
+    <div class="row g-3 align-items-center">
+        <div class="col-lg-8 d-flex flex-wrap gap-2 align-items-center">
+            <span class="small fw-bold text-muted me-2"><i class="bi bi-funnel"></i> Category:</span>
+            <a href="{{ url_for('student.subjects_list') }}" class="btn btn-sm {% if not selected_category_id %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+                All Categories
+            </a>
+            {% for cat in categories %}
+            <a href="{{ url_for('student.subjects_list', category_id=cat.id) }}" class="btn btn-sm {% if selected_category_id == cat.id %}btn-primary{% else %}btn-outline-secondary{% endif %} rounded-pill px-3">
+                <i class="bi {{ cat.icon }} me-1"></i>{{ cat.name }}
+            </a>
+            {% endfor %}
+        </div>
+        <div class="col-lg-4">
+            <form method="GET" action="{{ url_for('student.subjects_list') }}">
+                {% if selected_category_id %}
+                    <input type="hidden" name="category_id" value="{{ selected_category_id }}">
+                {% endif %}
+                <div class="input-group input-group-sm">
+                    <input type="search" name="q" class="form-control rounded-start-pill" placeholder="Filter subjects..." value="{{ search_query or '' }}">
+                    <button class="btn btn-primary rounded-end-pill px-3" type="submit"><i class="bi bi-search"></i></button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Subjects Grid -->
+<div class="row g-4">
+    {% for s in subjects %}
+    <div class="col-md-6 col-lg-4 col-xl-3">
+        <div class="card sh-card sh-subject-card h-100 p-3 shadow-sm d-flex flex-column" onclick="window.location.href='{{ url_for('student.subject_detail', subject_id=s.id) }}'">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="sh-stat-icon bg-primary-subtle text-primary">
+                    <i class="bi {{ s.icon or 'bi-journal-bookmark' }} fs-4"></i>
+                </div>
+                <div>
+                    <h5 class="fw-bold mb-0 text-truncate" style="max-width: 170px;" title="{{ s.subject_name }}">{{ s.subject_name }}</h5>
+                </div>
+            </div>
+
+            <p class="text-muted small mb-3 flex-grow-1">
+                {{ s.description or 'Course materials, syllabi, and reference documents.' }}
+            </p>
+
+            <div class="mb-3">
+                {% for cat in s.categories[:2] %}
+                    <span class="badge bg-light text-secondary border small me-1">{{ cat.name }}</span>
+                {% endfor %}
+                {% for t in s.tags[:2] %}
+                    <span class="badge bg-light text-muted small me-1">#{{ t.name }}</span>
+                {% endfor %}
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center border-top pt-3 mt-auto">
+                <span class="small text-muted">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> {{ s.pdf_materials | selectattr('is_published') | list | length }} PDFs
+                </span>
+                <a href="{{ url_for('student.subject_detail', subject_id=s.id) }}" class="btn btn-sm btn-primary rounded-pill px-3">
+                    Open <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12 text-center py-5 text-muted">
+        <i class="bi bi-journal-x fs-1 mb-2"></i>
+        <h5 class="fw-bold">No Subjects Found</h5>
+        <p class="small">Try clearing your filters or search query.</p>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

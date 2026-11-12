@@ -5,7 +5,7 @@
 {% block admin_content %}
 <div class="mb-4">
     <h3 class="fw-bold mb-1">Upload PDF Document</h3>
-    <p class="text-muted small mb-0">Direct presigned browser upload to private Cloudflare R2 bucket</p>
+    <p class="text-muted small mb-0">Contribute educational materials to the shared global library with direct presigned upload</p>
 </div>
 
 <div class="row g-4">
@@ -24,7 +24,7 @@
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label small fw-semibold">Select Title / Chapter <span class="text-danger">*</span></label>
+                        <label class="form-label small fw-semibold">Select Title / Playlist <span class="text-danger">*</span></label>
                         <select class="form-select" id="uploadTitleSelect" required disabled>
                             <option value="">-- First Select a Subject --</option>
                         </select>
@@ -34,12 +34,33 @@
                 <!-- 2. PDF Details -->
                 <div class="mb-3">
                     <label class="form-label small fw-semibold">PDF Document Title <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control" id="pdfTitleInput" placeholder="e.g. Chapter 1 Lecture Notes & Solved Problems" required>
+                    <input type="text" class="form-control" id="pdfTitleInput" placeholder="e.g. Unit 1 Lecture Notes & Solved Numericals" required>
                 </div>
 
                 <div class="mb-3">
                     <label class="form-label small fw-semibold">Description</label>
-                    <textarea class="form-control" id="pdfDescriptionInput" rows="3" placeholder="Brief overview or key topics covered in this document..."></textarea>
+                    <textarea class="form-control" id="pdfDescriptionInput" rows="2" placeholder="Summary of chapters or key formulas covered..."></textarea>
+                </div>
+
+                <!-- Metadata Row: Language, Academic Year, Semester -->
+                <div class="row g-3 mb-3">
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Language</label>
+                        <input type="text" class="form-control" id="pdfLanguageInput" value="English" placeholder="English, Spanish, etc.">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Academic Year</label>
+                        <input type="text" class="form-control" id="pdfYearInput" placeholder="e.g. 2024-2025 or 2nd Year">
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small fw-semibold">Semester</label>
+                        <input type="text" class="form-control" id="pdfSemesterInput" placeholder="e.g. Semester 3">
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Tags (comma-separated)</label>
+                    <input type="text" class="form-control" id="pdfTagsInput" placeholder="e.g. exam, formulas, cheatsheet">
                 </div>
 
                 <!-- 3. File Input -->
@@ -56,7 +77,7 @@
                 <div class="mb-4 form-check">
                     <input type="checkbox" class="form-check-input" id="pdfPublishedCheck" checked>
                     <label class="form-check-label small fw-semibold" for="pdfPublishedCheck">
-                        Publish immediately to enrolled students
+                        Publish immediately to all students in shared library
                     </label>
                 </div>
 
@@ -81,25 +102,13 @@
     <!-- Storage Usage & Guidelines -->
     <div class="col-lg-4">
         <div class="card sh-card shadow-sm p-4 mb-4">
-            <h6 class="fw-bold mb-3"><i class="bi bi-shield-check text-success me-2"></i>Storage Rules & Limits</h6>
+            <h6 class="fw-bold mb-3"><i class="bi bi-shield-check text-success me-2"></i>Global Shared Library Rules</h6>
             <ul class="list-unstyled small text-muted mb-0">
                 <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i><strong>Max File Size:</strong> 100 MB per single PDF.</li>
-                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i><strong>Tenant Quota:</strong> 9 GiB safety ceiling.</li>
-                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i><strong>Direct R2:</strong> Uploads bypass the Render web process directly into Cloudflare R2 object storage.</li>
-                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i><strong>Integrity:</strong> Magic byte validation (%PDF-) & SHA256 checksum recorded.</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i><strong>SHA-256 Deduplication:</strong> Prevents duplicate PDF uploads across the platform.</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i><strong>Direct Cloudflare R2:</strong> Files upload directly to private R2 storage without consuming web server memory.</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i><strong>Integrity:</strong> Magic byte validation (%PDF-) is enforced before saving.</li>
             </ul>
-        </div>
-
-        <div class="card sh-card shadow-sm p-4">
-            <h6 class="fw-bold mb-2">Storage Status</h6>
-            <div class="d-flex justify-content-between small text-muted mb-1">
-                <span>Used: {{ stats.storage_used_mb }} MB</span>
-                <span>Max: 9,216 MB</span>
-            </div>
-            {% set pct = (stats.storage_used_mb / stats.storage_limit_mb * 100) | round(1) %}
-            <div class="progress" style="height: 8px;">
-                <div class="progress-bar bg-info" style="width: {{ pct }}%;"></div>
-            </div>
         </div>
     </div>
 </div>

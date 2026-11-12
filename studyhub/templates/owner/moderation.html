@@ -1,0 +1,118 @@
+{% extends "owner/layout.html" %}
+
+{% block title %}Content Moderation Queue - StudyHub V2{% endblock %}
+
+{% block owner_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h3 class="fw-bold mb-1">Content Moderation Queue</h3>
+        <p class="text-muted small mb-0">Review reports submitted by students regarding incorrect, corrupted, or infringing PDFs</p>
+    </div>
+    <!-- Status Filter Pills -->
+    <div class="btn-group" role="group">
+        <a href="{{ url_for('owner.moderation') }}" class="btn btn-sm {% if not current_filter %}btn-primary{% else %}btn-outline-primary{% endif %}">All</a>
+        <a href="{{ url_for('owner.moderation', status='pending') }}" class="btn btn-sm {% if current_filter == 'pending' %}btn-primary{% else %}btn-outline-primary{% endif %}">Pending</a>
+        <a href="{{ url_for('owner.moderation', status='under_review') }}" class="btn btn-sm {% if current_filter == 'under_review' %}btn-primary{% else %}btn-outline-primary{% endif %}">Under Review</a>
+        <a href="{{ url_for('owner.moderation', status='resolved') }}" class="btn btn-sm {% if current_filter == 'resolved' %}btn-primary{% else %}btn-outline-primary{% endif %}">Resolved</a>
+        <a href="{{ url_for('owner.moderation', status='dismissed') }}" class="btn btn-sm {% if current_filter == 'dismissed' %}btn-primary{% else %}btn-outline-primary{% endif %}">Dismissed</a>
+    </div>
+</div>
+
+<div class="card sh-card shadow-sm p-3">
+    {% if reports %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Status</th>
+                        <th>Target Material</th>
+                        <th>Reason Category</th>
+                        <th>Description / Details</th>
+                        <th>Reporter</th>
+                        <th>Reported Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for report in reports %}
+                    <tr>
+                        <td>
+                            <span class="badge {% if report.status == 'pending' %}bg-danger{% elif report.status == 'under_review' %}bg-warning text-dark{% elif report.status == 'resolved' %}bg-success{% else %}bg-secondary{% endif %}">
+                                {{ report.status | replace('_', ' ') | title }}
+                            </span>
+                        </td>
+                        <td class="fw-bold">
+                            {% if report.pdf_material %}
+                                <a href="{{ url_for('student.view_pdf', pdf_id=report.pdf_material.id) }}" target="_blank" class="text-decoration-none">
+                                    <i class="bi bi-file-earmark-pdf text-danger me-1"></i>{{ report.pdf_material.title }}
+                                </a>
+                                <div class="small text-muted">Uploaded by: {{ report.pdf_material.uploader.username if report.pdf_material.uploader else '-' }}</div>
+                            {% else %}
+                                <span class="text-muted">Deleted Material</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge bg-secondary-subtle text-secondary border">{{ report.category | replace('_', ' ') | title }}</span></td>
+                        <td class="small text-secondary" style="max-width: 250px;">
+                            {{ report.description }}
+                            {% if report.admin_notes %}
+                                <div class="mt-1 small text-primary"><strong>Admin Note:</strong> {{ report.admin_notes }}</div>
+                            {% endif %}
+                        </td>
+                        <td class="small">{{ report.reporter.username if report.reporter else 'Anonymous' }}</td>
+                        <td class="small text-muted">{{ report.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>
+                            {% if report.status in ['pending', 'under_review'] %}
+                                <button class="btn btn-sm btn-primary rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#resolveModal{{ report.id }}">
+                                    Action
+                                </button>
+
+                                <!-- Resolve Modal -->
+                                <div class="modal fade" id="resolveModal{{ report.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <form method="POST" action="{{ url_for('owner.resolve_report', report_id=report.id) }}">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title fw-bold">Moderate Content Report</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p class="small text-muted">Choose resolution for report on <strong>{{ report.pdf_material.title if report.pdf_material else 'PDF' }}</strong>.</p>
+                                                    <div class="mb-3">
+                                                        <label class="form-label small fw-semibold">Action</label>
+                                                        <select name="action" class="form-select" required>
+                                                            <option value="under_review">Mark Under Investigation</option>
+                                                            <option value="resolve">Resolve (Fix Applied / Accepted)</option>
+                                                            <option value="dismiss">Dismiss Report (False / Invalid)</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="mb-3">
+                                                        <label class="form-label small fw-semibold">Admin Notes (visible to uploader & reporter)</label>
+                                                        <textarea name="admin_notes" class="form-control" rows="3" placeholder="Provide reason or resolution steps taken..."></textarea>
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-primary">Submit Decision</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <span class="small text-muted">Closed</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5 text-muted">
+            <i class="bi bi-shield-check fs-1 text-success"></i>
+            <p class="mt-2">No reports matching filter.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

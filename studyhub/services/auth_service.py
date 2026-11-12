@@ -6,10 +6,9 @@ from flask_login import current_user
 from functools import wraps
 from studyhub.extensions import db, login_manager
 from studyhub.models.user import User
-from studyhub.models.tenant import Tenant
 from studyhub.models.audit import AuditLog
 
-# Argon2id password hasher with secure modern parameters
+# Argon2id password hasher
 _hasher = argon2.PasswordHasher(
     time_cost=3,
     memory_cost=65536,  # 64 MiB
@@ -30,26 +29,25 @@ def verify_password(hash_str: str, password: str) -> bool:
         return False
 
 def check_needs_rehash(hash_str: str) -> bool:
-    """Checks if password hash needs to be recomputed under newer parameters."""
     return _hasher.check_needs_rehash(hash_str)
 
 @login_manager.user_loader
 def load_user(user_id: str):
-    """Flask-Login user loader."""
     return db.session.get(User, user_id)
 
-def is_platform_owner_initialized() -> bool:
-    """Checks whether the first-time Platform Owner has already been created."""
-    owner_count = db.session.query(User).filter_by(role="platform_owner").count()
-    return owner_count > 0
+def is_main_admin_initialized() -> bool:
+    """Checks whether the first-time Main Administrator has already been created."""
+    count = db.session.query(User).filter(User.role.in_(["main_admin", "platform_owner"])).count()
+    return count > 0
 
-def bootstrap_platform_owner(token: str, full_name: str, username: str, email: str, password: str, ip_address: str = None) -> User:
-    """
-    Initializes the single Platform Owner on first deployment.
-    Permanent lock once created.
-    """
-    if is_platform_owner_initialized():
-        raise ValueError("Platform Owner setup is permanently closed. An owner account already exists.")
+# Backward compatibility alias
+def is_platform_owner_initialized() -> bool:
+    return is_main_admin_initialized()
+
+def bootstrap_main_admin(token: str, full_name: str, username: str, email: str, password: str, ip_address: str = None) -> User:
+    """Initializes the single Main Administrator on first deployment. Permanent lock once created."""
+    if is_main_admin_initialized():
+        raise ValueError("Main Admin setup is permanently closed. An administrator already exists.")
 
     expected_token = current_app.config.get("OWNER_BOOTSTRAP_TOKEN", "")
     if not expected_token or not hmac.compare_digest(expected_token.strip(), token.strip()):
@@ -58,55 +56,64 @@ def bootstrap_platform_owner(token: str, full_name: str, username: str, email: s
     if len(password) < 10:
         raise ValueError("Password must be at least 10 characters long.")
 
-    # Create the owner user
-    owner = User(
+    admin = User(
         full_name=full_name.strip(),
         username=username.strip().lower(),
         email=email.strip().lower(),
         password_hash=hash_password(password),
-        role="platform_owner",
-        tenant_id=None,
+        role="main_admin",
         is_active=True,
         must_change_password=False,
-        created_by="system_bootstrap"
+        created_by_admin_id=None
     )
-    db.session.add(owner)
-    
-    # Audit log
+    db.session.add(admin)
+    db.session.flush()
+
     audit = AuditLog(
-        tenant_id=None,
-        actor_user_id=owner.id,
-        action="platform_owner_bootstrap",
+        actor_user_id=admin.id,
+        action="main_admin_bootstrap",
         target_type="user",
-        target_id=owner.id,
-        description=f"Platform Owner initialized via bootstrap token: {username}",
+        target_id=admin.id,
+        description=f"Main Administrator initialized via bootstrap token: {username}",
         ip_address=ip_address
     )
     db.session.add(audit)
     db.session.commit()
-    return owner
+    return admin
+
+# Backward compatibility alias
+def bootstrap_platform_owner(token: str, full_name: str, username: str, email: str, password: str, ip_address: str = None) -> User:
+    return bootstrap_main_admin(token, full_name, username, email, password, ip_address)
 
 def role_required(*allowed_roles):
-    """Decorator ensuring current user has one of the specified roles."""
+    """Decorator ensuring current user has one of the specified roles (supporting role aliases)."""
+    # Normalize aliases
+    normalized_roles = set(allowed_roles)
+    if "main_admin" in normalized_roles:
+        normalized_roles.add("platform_owner")
+    if "platform_owner" in normalized_roles:
+        normalized_roles.add("main_admin")
+    if "user" in normalized_roles:
+        normalized_roles.add("student")
+    if "student" in normalized_roles:
+        normalized_roles.add("user")
+
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
             if not current_user.is_authenticated:
                 return redirect(url_for("auth.login"))
             
-            if current_user.role not in allowed_roles:
+            if current_user.role not in normalized_roles:
                 abort(403)
                 
             if current_user.must_change_password:
-                flash("You must change your temporary password before proceeding.", "warning")
+                flash("You must update your temporary password before proceeding.", "warning")
                 return redirect(url_for("auth.change_password"))
                 
-            # If tenant-scoped user (admin or student), verify tenant is active
-            if current_user.tenant_id:
-                tenant = db.session.get(Tenant, current_user.tenant_id)
-                if not tenant or tenant.status != "active":
-                    flash("Your institution account is inactive or suspended. Please contact your administrator.", "danger")
-                    abort(403)
+            if not current_user.is_active:
+                flash("Your account has been deactivated. Please contact support.", "danger")
+                abort(403)
 
             return fn(*args, **kwargs)
         return wrapper
