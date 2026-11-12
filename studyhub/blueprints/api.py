@@ -1,4 +1,5 @@
-from flask import Blueprint, jsonify, request, abort
+import os
+from flask import Blueprint, jsonify, request, abort, send_file
 from flask_login import current_user, login_required
 from studyhub.services.auth_service import role_required
 from studyhub.services.content_service import ContentService
@@ -17,6 +18,52 @@ def healthz():
         "service": "StudyHub V2",
         "mode": "shared_global_library"
     }), 200
+
+# =============================================================================
+# STORAGE / UPLOAD FALLBACK APIs
+# =============================================================================
+
+@api_bp.route("/storage/upload/<path:storage_key>", methods=["PUT", "POST"])
+@login_required
+def upload_file_direct(storage_key):
+    """
+    Direct server-side storage endpoint used when Cloudflare R2 is in fallback mode.
+    Accepts raw binary stream from XHR PUT/POST matching presigned URL contract.
+    """
+    if not (current_user.is_admin() or current_user.is_main_admin()):
+        abort(403)
+
+    data = request.get_data()
+    if not data and request.files:
+        uploaded_file = next(iter(request.files.values()), None)
+        if uploaded_file:
+            data = uploaded_file.read()
+
+    if not data:
+        return jsonify({"error": "Empty file payload."}), 400
+
+    StorageService.save_local_file(storage_key, data)
+    return jsonify({"status": "uploaded", "storage_key": storage_key}), 200
+
+@api_bp.route("/storage/download/<path:storage_key>", methods=["GET"])
+@login_required
+def download_file_direct(storage_key):
+    """
+    Direct server-side download/streaming endpoint used when Cloudflare R2 is in fallback mode.
+    """
+    local_path = StorageService.get_local_file_path(storage_key)
+    if not os.path.exists(local_path):
+        abort(404)
+
+    filename = request.args.get("filename", "document.pdf")
+    as_attachment = request.args.get("inline", "1") != "1"
+
+    return send_file(
+        local_path,
+        mimetype="application/pdf",
+        as_attachment=as_attachment,
+        download_name=filename
+    )
 
 # =============================================================================
 # ADMIN STORAGE / UPLOAD APIs

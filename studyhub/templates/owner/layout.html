@@ -2,13 +2,13 @@
 
 {% block body %}
 <div class="d-flex">
-    <!-- Main Administrator Sidebar -->
+    <!-- Desktop Main Administrator Sidebar -->
     <div class="sh-sidebar p-3 d-none d-md-block shadow-sm">
         <div class="mb-4 px-3">
-            <span class="text-uppercase small fw-bold text-muted" style="letter-spacing: 0.1em;">Master Platform</span>
+            <span class="text-uppercase small fw-bold text-muted" style="letter-spacing: 0.1em; font-size: 0.7rem;">Master Platform</span>
             <h6 class="fw-bold text-white mt-1">Main Admin Console</h6>
         </div>
-        <ul class="nav flex-column">
+        <ul class="nav flex-column gap-1">
             <li class="nav-item">
                 <a class="nav-link {% if request.endpoint == 'owner.dashboard' %}active{% endif %}" href="{{ url_for('owner.dashboard') }}">
                     <i class="bi bi-speedometer2"></i> Dashboard
@@ -21,7 +21,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link {% if request.endpoint == 'owner.categories' %}active{% endif %}" href="{{ url_for('owner.categories') }}">
-                    <i class="bi bi-folder2-open"></i> Content Categories
+                    <i class="bi bi-folder2-open"></i> Categories & Tags
                 </a>
             </li>
             <li class="nav-item">
@@ -56,7 +56,22 @@
     </div>
 
     <!-- Main Workspace -->
-    <div class="flex-grow-1 p-4">
+    <div class="flex-grow-1 p-2 p-sm-3 p-md-4 overflow-x-hidden min-vh-100">
+        <!-- Mobile Main Admin Sub-bar -->
+        <div class="d-md-none mb-3 d-flex align-items-center justify-content-between p-2 rounded-3 bg-body-tertiary border shadow-xs">
+            <button class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 d-flex align-items-center gap-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileAppDrawer">
+                <i class="bi bi-list"></i> Console Menu
+            </button>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('owner.admins') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-1">
+                    <i class="bi bi-people"></i> Admins
+                </a>
+                <a href="{{ url_for('owner.moderation') }}" class="btn btn-sm btn-warning rounded-pill px-2 py-1 shadow-xs">
+                    <i class="bi bi-shield"></i> Queue
+                </a>
+            </div>
+        </div>
+
         {% block owner_content %}{% endblock %}
     </div>
 </div>

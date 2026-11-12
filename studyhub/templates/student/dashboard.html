@@ -4,15 +4,15 @@
 
 {% block student_content %}
 <!-- Welcome & Personalization Hero Banner -->
-<div class="card sh-card shadow-sm p-4 mb-4 border-0" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 60%, #06b6d4 100%); color: #ffffff;">
+<div class="card sh-card shadow-xs p-3 p-md-4 mb-3 mb-md-4 border-0" style="background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 60%, #06b6d4 100%); color: #ffffff;">
     <div class="row align-items-center">
-        <div class="col-md-8">
-            <span class="badge bg-white text-primary mb-2 px-3 py-1 fw-semibold">
+        <div class="col-12 col-md-8">
+            <span class="badge bg-white text-primary mb-2 px-2 py-1 fw-semibold text-truncate d-inline-block" style="font-size: 0.75rem; max-width: 100%;">
                 <i class="bi bi-globe2 me-1"></i> Global Shared Educational Digital Library
             </span>
-            <h2 class="fw-bold mb-1">Hello, {{ current_user.full_name }}!</h2>
-            <p class="mb-3 text-white-75">Explore thousands of open textbooks, lecture notes, syllabus materials, and past papers curated by verified educators worldwide.</p>
-            <div class="d-flex gap-2">
+            <h2 class="fw-bold mb-1 fs-3 fs-md-2">Hello, {{ current_user.full_name }}!</h2>
+            <p class="mb-3 text-white-75 small">Explore thousands of open textbooks, lecture notes, syllabus materials, and past papers curated by verified educators worldwide.</p>
+            <div class="d-flex flex-wrap gap-2">
                 <a href="{{ url_for('student.interests') }}" class="btn btn-sm btn-light rounded-pill px-3 fw-semibold">
                     <i class="bi bi-compass me-1 text-primary"></i> Personalize Interests
                 </a>
@@ -22,7 +22,7 @@
             </div>
         </div>
         <div class="col-md-4 text-end d-none d-md-block">
-            <i class="bi bi-mortarboard-fill display-1 text-white-50"></i>
+            <i class="bi bi-mortarboard-fill display-2 text-white-50"></i>
         </div>
     </div>
 </div>

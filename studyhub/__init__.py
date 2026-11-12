@@ -21,8 +21,9 @@ def create_app(config_name=None):
     limiter.init_app(app)
 
     # Exempt public health check and API endpoints where CSRF token might be sent in header or handled
-    from studyhub.blueprints.api import healthz
+    from studyhub.blueprints.api import healthz, upload_file_direct
     csrf.exempt(healthz)
+    csrf.exempt(upload_file_direct)
 
     # Register blueprints
     from studyhub.blueprints.auth import auth_bp

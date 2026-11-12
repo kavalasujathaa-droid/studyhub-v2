@@ -14,14 +14,22 @@
 </head>
 <body>
     <!-- Top Navigation -->
-    <nav class="navbar navbar-expand-lg border-bottom sticky-top bg-body">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-primary" href="/">
-                <i class="bi bi-mortarboard-fill fs-4"></i>
-                <span>StudyHub <span class="navbar-brand-badge bg-primary text-white">V2</span></span>
-            </a>
+    <nav class="navbar navbar-expand border-bottom sticky-top bg-body shadow-xs" style="z-index: 1030;">
+        <div class="container-fluid px-2 px-sm-3 px-md-4">
+            <div class="d-flex align-items-center">
+                {% if current_user.is_authenticated %}
+                <button class="btn btn-sm btn-outline-secondary d-md-none me-2 rounded-3 px-2 py-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileAppDrawer" aria-controls="mobileAppDrawer" aria-label="Open Navigation">
+                    <i class="bi bi-list fs-5 lh-1"></i>
+                </button>
+                {% endif %}
 
-            <!-- Quick Global Search in Header -->
+                <a class="navbar-brand d-flex align-items-center gap-2 fw-bold text-primary m-0 py-1" href="/">
+                    <i class="bi bi-mortarboard-fill fs-4 lh-1"></i>
+                    <span class="fs-5">StudyHub <span class="navbar-brand-badge bg-primary text-white">V2</span></span>
+                </a>
+            </div>
+
+            <!-- Quick Global Search in Header (Desktop) -->
             {% if current_user.is_authenticated %}
             <div class="d-none d-lg-block ms-4" style="width: 320px;">
                 <form action="{{ url_for('student.search') }}" method="GET" class="position-relative">
@@ -32,18 +40,18 @@
             {% endif %}
 
             <!-- Navbar Actions -->
-            <div class="d-flex align-items-center gap-3 ms-auto">
+            <div class="d-flex align-items-center gap-2 gap-sm-3 ms-auto">
                 {% if current_user.is_authenticated %}
-                    <span class="badge {% if current_user.is_main_admin() %}badge-role-owner{% elif current_user.is_admin() %}badge-role-admin{% else %}badge-role-student{% endif %}">
+                    <span class="badge d-none d-md-inline-block {% if current_user.is_main_admin() %}badge-role-owner{% elif current_user.is_admin() %}badge-role-admin{% else %}badge-role-student{% endif %}">
                         {% if current_user.is_main_admin() %}Main Admin{% elif current_user.is_admin() %}Admin Contributor{% else %}Learner{% endif %}
                     </span>
 
-                    <span class="fw-semibold text-truncate d-none d-sm-inline-block" style="max-width: 150px;">
+                    <span class="fw-semibold text-truncate d-none d-lg-inline-block" style="max-width: 140px;">
                         {{ current_user.full_name }}
                     </span>
 
                     <!-- In-App Notifications -->
-                    <a href="{{ url_for('student.notifications') }}" class="btn btn-outline-secondary btn-sm rounded-circle p-2 position-relative" title="Notifications">
+                    <a href="{{ url_for('student.notifications') }}" class="btn btn-outline-secondary btn-sm rounded-circle p-2 position-relative" title="Notifications" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;">
                         <i class="bi bi-bell-fill"></i>
                         {% if unread_notifications_count > 0 %}
                             <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.65rem;">
@@ -54,14 +62,15 @@
                 {% endif %}
 
                 <!-- Dark / Light Mode Toggle Button -->
-                <button class="btn btn-outline-secondary btn-sm rounded-circle p-2" id="themeToggleBtn" title="Toggle theme" type="button">
+                <button class="btn btn-outline-secondary btn-sm rounded-circle p-2" id="themeToggleBtn" title="Toggle theme" type="button" style="width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;">
                     <i class="bi bi-moon-stars-fill" id="themeIcon"></i>
                 </button>
 
                 {% if current_user.is_authenticated %}
                     <div class="dropdown">
-                        <button class="btn btn-sm btn-outline-primary dropdown-toggle rounded-pill px-3" type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle me-1"></i> Account
+                        <button class="btn btn-sm btn-outline-primary dropdown-toggle rounded-pill px-2 px-sm-3 py-1 d-flex align-items-center gap-1" type="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i>
+                            <span class="d-none d-sm-inline">Account</span>
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                             <li><span class="dropdown-item-text text-muted small">Signed in as <strong>{{ current_user.username }}</strong></span></li>
@@ -83,14 +92,89 @@
         </div>
     </nav>
 
+    <!-- Mobile App Navigation Drawer (Offcanvas) -->
+    {% if current_user.is_authenticated %}
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="mobileAppDrawer" aria-labelledby="mobileAppDrawerLabel" style="max-width: 280px;">
+        <div class="offcanvas-header border-bottom py-3">
+            <h5 class="offcanvas-title fw-bold text-primary d-flex align-items-center gap-2 m-0" id="mobileAppDrawerLabel">
+                <i class="bi bi-mortarboard-fill fs-4"></i>
+                <span>StudyHub <span class="navbar-brand-badge bg-primary text-white">V2</span></span>
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0 d-flex flex-column">
+            <!-- User info banner in drawer -->
+            <div class="p-3 bg-body-tertiary border-bottom">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold shadow-xs" style="width: 40px; height: 40px; font-size: 1rem;">
+                        {{ current_user.username[:2].upper() }}
+                    </div>
+                    <div class="text-truncate">
+                        <div class="fw-bold text-truncate small">{{ current_user.full_name }}</div>
+                        <span class="badge {% if current_user.is_main_admin() %}badge-role-owner{% elif current_user.is_admin() %}badge-role-admin{% else %}badge-role-student{% endif %}" style="font-size: 0.65rem;">
+                            {% if current_user.is_main_admin() %}Main Admin{% elif current_user.is_admin() %}Admin Contributor{% else %}Learner{% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Role-Specific Navigation Links in Drawer -->
+            <div class="p-2 flex-grow-1 overflow-y-auto">
+                <div class="text-uppercase small fw-bold text-muted px-3 py-1" style="font-size: 0.7rem; letter-spacing: 0.08em;">
+                    {% if current_user.is_main_admin() %}Master Console{% elif current_user.is_admin() %}Educator Portal{% else %}Library Menu{% endif %}
+                </div>
+                <ul class="nav flex-column gap-1">
+                    {% if current_user.is_main_admin() %}
+                        <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'owner.dashboard' %}active bg-primary text-white{% endif %}" href="{{ url_for('owner.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>Dashboard</a></li>
+                        <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'owner.admins' %}active bg-primary text-white{% endif %}" href="{{ url_for('owner.admins') }}"><i class="bi bi-person-badge me-2"></i>Manage Admins</a></li>
+                        <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'owner.categories' %}active bg-primary text-white{% endif %}" href="{{ url_for('owner.categories') }}"><i class="bi bi-folder2-open me-2"></i>Categories & Tags</a></li>
+                        <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'owner.announcements' %}active bg-primary text-white{% endif %}" href="{{ url_for('owner.announcements') }}"><i class="bi bi-megaphone me-2"></i>Announcements</a></li>
+                        <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'owner.moderation' %}active bg-primary text-white{% endif %}" href="{{ url_for('owner.moderation') }}"><i class="bi bi-shield-exclamation me-2"></i>Moderation Queue</a></li>
+                        <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'owner.recovery' %}active bg-primary text-white{% endif %}" href="{{ url_for('owner.recovery') }}"><i class="bi bi-recycle me-2"></i>Recovery Vault</a></li>
+                        <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'owner.backups' %}active bg-primary text-white{% endif %}" href="{{ url_for('owner.backups') }}"><i class="bi bi-cloud-arrow-down me-2"></i>Backup & Storage</a></li>
+                        <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'owner.audit_logs' %}active bg-primary text-white{% endif %}" href="{{ url_for('owner.audit_logs') }}"><i class="bi bi-journal-text me-2"></i>Audit Logs</a></li>
+                    {% elif current_user.is_admin() %}
+                        <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'admin.dashboard' %}active bg-primary text-white{% endif %}" href="{{ url_for('admin.dashboard') }}"><i class="bi bi-speedometer2 me-2"></i>Overview</a></li>
+                        <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'admin.students' %}active bg-primary text-white{% endif %}" href="{{ url_for('admin.students') }}"><i class="bi bi-people me-2"></i>My Students</a></li>
+                        <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint in ['admin.subjects', 'admin.titles'] %}active bg-primary text-white{% endif %}" href="{{ url_for('admin.subjects') }}"><i class="bi bi-folder2-open me-2"></i>Shared Subjects</a></li>
+                        <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'admin.upload' %}active bg-primary text-white{% endif %}" href="{{ url_for('admin.upload') }}"><i class="bi bi-cloud-arrow-up me-2"></i>Upload PDF</a></li>
+                        <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint in ['admin.materials', 'admin.material_versions'] %}active bg-primary text-white{% endif %}" href="{{ url_for('admin.materials') }}"><i class="bi bi-file-earmark-pdf me-2"></i>Uploaded Materials</a></li>
+                        <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint in ['admin.reports', 'admin.resolve_report'] %}active bg-primary text-white{% endif %}" href="{{ url_for('admin.reports') }}"><i class="bi bi-shield-exclamation me-2"></i>Content Reports</a></li>
+                        <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'admin.storage' %}active bg-primary text-white{% endif %}" href="{{ url_for('admin.storage') }}"><i class="bi bi-pie-chart me-2"></i>Analytics</a></li>
+                        <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'admin.activity' %}active bg-primary text-white{% endif %}" href="{{ url_for('admin.activity') }}"><i class="bi bi-clock-history me-2"></i>Activity History</a></li>
+                    {% endif %}
+
+                    <li class="nav-item"><hr class="dropdown-divider my-2"></li>
+                    <div class="text-uppercase small fw-bold text-muted px-3 py-1" style="font-size: 0.7rem; letter-spacing: 0.08em;">Global Library</div>
+                    <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'student.dashboard' %}active bg-primary text-white{% endif %}" href="{{ url_for('student.dashboard') }}"><i class="bi bi-house-door me-2 text-success"></i>Library Home</a></li>
+                    <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'student.subjects_list' %}active bg-primary text-white{% endif %}" href="{{ url_for('student.subjects_list') }}"><i class="bi bi-journal-bookmark me-2 text-primary"></i>All Subjects</a></li>
+                    <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'student.search' %}active bg-primary text-white{% endif %}" href="{{ url_for('student.search') }}"><i class="bi bi-search me-2 text-info"></i>Search & Filter</a></li>
+                    <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'student.bookmarks' %}active bg-primary text-white{% endif %}" href="{{ url_for('student.bookmarks') }}"><i class="bi bi-bookmark-fill me-2 text-warning"></i>Bookmarks</a></li>
+                    <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'student.history' %}active bg-primary text-white{% endif %}" href="{{ url_for('student.history') }}"><i class="bi bi-clock-history me-2 text-secondary"></i>Reading History</a></li>
+                    <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'student.notes' %}active bg-primary text-white{% endif %}" href="{{ url_for('student.notes') }}"><i class="bi bi-journal-text me-2 text-danger"></i>Study Notes</a></li>
+                    <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'student.downloads' %}active bg-primary text-white{% endif %}" href="{{ url_for('student.downloads') }}"><i class="bi bi-download me-2 text-success"></i>Downloads</a></li>
+                    <li class="nav-item"><a class="nav-link py-2 px-3 rounded-3 text-body {% if request.endpoint == 'student.interests' %}active bg-primary text-white{% endif %}" href="{{ url_for('student.interests') }}"><i class="bi bi-compass me-2 text-primary"></i>My Interests</a></li>
+                </ul>
+            </div>
+
+            <!-- Drawer Footer -->
+            <div class="p-3 border-top mt-auto bg-body-tertiary">
+                <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm w-100 rounded-pill d-flex align-items-center justify-content-center gap-2">
+                    <i class="bi bi-box-arrow-right"></i> Sign Out
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Main Content Area -->
     <main>
         <!-- Flash Notifications -->
-        <div class="container-fluid px-4 mt-3">
+        <div class="container-fluid px-2 px-sm-3 px-md-4 mt-3">
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm" role="alert">
+                        <div class="alert alert-{{ category }} alert-dismissible fade show shadow-sm rounded-3" role="alert">
                             {{ message }}
                             <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                         </div>
@@ -102,12 +186,45 @@
         {% block body %}{% endblock %}
     </main>
 
-    <!-- Toast Notification Container -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" style="z-index: 1100;"></div>
-
-    <!-- Scripts -->
+    <!-- Bootstrap 5.3 JS Bundle CDN -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script>
+        // CSRF helper for AJAX requests
+        window.getCSRFToken = function() {
+            const tag = document.querySelector('meta[name="csrf-token"]');
+            return tag ? tag.getAttribute("content") : "";
+        };
+
+        // Dark / Light Theme Toggle with LocalStorage persistence
+        document.addEventListener("DOMContentLoaded", () => {
+            const toggleBtn = document.getElementById("themeToggleBtn");
+            const themeIcon = document.getElementById("themeIcon");
+            const htmlTag = document.documentElement;
+
+            const savedTheme = localStorage.getItem("studyhub_theme") || "light";
+            htmlTag.setAttribute("data-bs-theme", savedTheme);
+            updateThemeIcon(savedTheme);
+
+            if (toggleBtn) {
+                toggleBtn.addEventListener("click", () => {
+                    const currentTheme = htmlTag.getAttribute("data-bs-theme");
+                    const nextTheme = currentTheme === "dark" ? "light" : "dark";
+                    htmlTag.setAttribute("data-bs-theme", nextTheme);
+                    localStorage.setItem("studyhub_theme", nextTheme);
+                    updateThemeIcon(nextTheme);
+                });
+            }
+
+            function updateThemeIcon(theme) {
+                if (!themeIcon) return;
+                if (theme === "dark") {
+                    themeIcon.className = "bi bi-sun-fill text-warning";
+                } else {
+                    themeIcon.className = "bi bi-moon-stars-fill";
+                }
+            }
+        });
+    </script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

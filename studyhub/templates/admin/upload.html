@@ -3,29 +3,29 @@
 {% block title %}Upload PDF Material - StudyHub V2{% endblock %}
 
 {% block admin_content %}
-<div class="mb-4">
-    <h3 class="fw-bold mb-1">Upload PDF Document</h3>
-    <p class="text-muted small mb-0">Contribute educational materials to the shared global library with direct presigned upload</p>
+<div class="mb-3 mb-md-4">
+    <h3 class="fw-bold mb-1 fs-4 fs-md-3">Upload PDF Document</h3>
+    <p class="text-muted small mb-0">Contribute educational materials to the shared global library with direct verified upload</p>
 </div>
 
-<div class="row g-4">
-    <div class="col-lg-8">
-        <div class="card sh-card shadow-sm p-4">
+<div class="row g-3 g-md-4">
+    <div class="col-12 col-lg-8">
+        <div class="card sh-card shadow-xs p-3 p-md-4">
             <form id="pdfUploadForm">
                 <!-- 1. Hierarchy Selection -->
-                <div class="row mb-3">
-                    <div class="col-md-6">
+                <div class="row g-2 g-md-3 mb-3">
+                    <div class="col-12 col-md-6">
                         <label class="form-label small fw-semibold">Select Subject <span class="text-danger">*</span></label>
-                        <select class="form-select" id="uploadSubjectSelect" required>
+                        <select class="form-select form-select-sm form-select-md-base" id="uploadSubjectSelect" required>
                             <option value="">-- Choose Subject --</option>
                             {% for s in subjects %}
                             <option value="{{ s.id }}">{{ s.subject_name }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-12 col-md-6">
                         <label class="form-label small fw-semibold">Select Title / Playlist <span class="text-danger">*</span></label>
-                        <select class="form-select" id="uploadTitleSelect" required disabled>
+                        <select class="form-select form-select-sm form-select-md-base" id="uploadTitleSelect" required disabled>
                             <option value="">-- First Select a Subject --</option>
                         </select>
                     </div>
@@ -43,16 +43,16 @@
                 </div>
 
                 <!-- Metadata Row: Language, Academic Year, Semester -->
-                <div class="row g-3 mb-3">
-                    <div class="col-md-4">
+                <div class="row g-2 g-md-3 mb-3">
+                    <div class="col-12 col-sm-4">
                         <label class="form-label small fw-semibold">Language</label>
                         <input type="text" class="form-control" id="pdfLanguageInput" value="English" placeholder="English, Spanish, etc.">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-6 col-sm-4">
                         <label class="form-label small fw-semibold">Academic Year</label>
-                        <input type="text" class="form-control" id="pdfYearInput" placeholder="e.g. 2024-2025 or 2nd Year">
+                        <input type="text" class="form-control" id="pdfYearInput" placeholder="e.g. 2024-2025">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-6 col-sm-4">
                         <label class="form-label small fw-semibold">Semester</label>
                         <input type="text" class="form-control" id="pdfSemesterInput" placeholder="e.g. Semester 3">
                     </div>
@@ -64,50 +64,64 @@
                 </div>
 
                 <!-- 3. File Input -->
-                <div class="mb-4">
+                <div class="mb-3 mb-md-4">
                     <label class="form-label small fw-semibold">PDF File (Max 100 MB) <span class="text-danger">*</span></label>
-                    <div class="sh-dropzone" onclick="document.getElementById('pdfFileInput').click()">
-                        <i class="bi bi-file-earmark-pdf-fill fs-1 text-primary mb-2"></i>
-                        <h6 class="fw-bold">Click or drag & drop PDF here</h6>
-                        <p class="text-muted small mb-0">Strictly verified for PDF magic bytes (%PDF-). Max 100 MB.</p>
+                    <div class="sh-dropzone py-3 px-2 py-md-4 px-md-3" onclick="document.getElementById('pdfFileInput').click()">
+                        <i class="bi bi-file-earmark-pdf-fill fs-2 fs-md-1 text-primary mb-2 d-block"></i>
+                        <h6 class="fw-bold mb-1 fs-6">Click or tap to choose PDF file</h6>
+                        <p class="text-muted small mb-0" style="font-size: 0.75rem;">Verified for PDF magic bytes (%PDF-). Up to 100 MB.</p>
                         <input type="file" id="pdfFileInput" accept="application/pdf,.pdf" class="d-none" required>
                     </div>
                 </div>
 
-                <div class="mb-4 form-check">
+                <div class="mb-3 mb-md-4 form-check">
                     <input type="checkbox" class="form-check-input" id="pdfPublishedCheck" checked>
                     <label class="form-check-label small fw-semibold" for="pdfPublishedCheck">
-                        Publish immediately to all students in shared library
+                        Publish immediately to all learners in shared library
                     </label>
                 </div>
 
                 <!-- 4. Progress Container -->
-                <div id="uploadProgressContainer" class="mb-4 d-none">
+                <div id="uploadProgressContainer" class="mb-3 mb-md-4 d-none">
                     <label class="form-label small fw-semibold d-flex justify-content-between">
-                        <span>Upload & Verification Progress</span>
-                        <span id="uploadStatusText" class="text-muted">Initializing...</span>
+                        <span>Upload Progress</span>
+                        <span id="uploadStatusText" class="text-muted small">Initializing...</span>
                     </label>
-                    <div class="progress" style="height: 16px;">
+                    <div class="progress" style="height: 14px;">
                         <div id="uploadProgressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width: 0%;"></div>
                     </div>
                 </div>
 
-                <button type="submit" id="uploadSubmitBtn" class="btn btn-primary rounded-pill px-5 py-2 fw-semibold shadow-sm">
+                <button type="submit" id="uploadSubmitBtn" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold shadow-xs w-100 w-sm-auto">
                     <i class="bi bi-cloud-arrow-up-fill me-1"></i> Start Secure Upload
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Storage Usage & Guidelines -->
-    <div class="col-lg-4">
-        <div class="card sh-card shadow-sm p-4 mb-4">
-            <h6 class="fw-bold mb-3"><i class="bi bi-shield-check text-success me-2"></i>Global Shared Library Rules</h6>
-            <ul class="list-unstyled small text-muted mb-0">
-                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i><strong>Max File Size:</strong> 100 MB per single PDF.</li>
-                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i><strong>SHA-256 Deduplication:</strong> Prevents duplicate PDF uploads across the platform.</li>
-                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i><strong>Direct Cloudflare R2:</strong> Files upload directly to private R2 storage without consuming web server memory.</li>
-                <li class="mb-2"><i class="bi bi-check-circle-fill text-primary me-2"></i><strong>Integrity:</strong> Magic byte validation (%PDF-) is enforced before saving.</li>
+    <!-- Upload Guidelines Card -->
+    <div class="col-12 col-lg-4">
+        <div class="card sh-card shadow-xs p-3 p-md-4">
+            <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+                <i class="bi bi-info-circle text-primary"></i> Upload Guidelines
+            </h6>
+            <ul class="list-unstyled small text-muted mb-0 d-flex flex-column gap-2">
+                <li class="d-flex align-items-start gap-2">
+                    <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                    <span><strong>100 MB Limit:</strong> File size ceiling per PDF.</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                    <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                    <span><strong>Duplicate Prevention:</strong> SHA-256 prevents duplicate uploads across the platform.</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                    <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                    <span><strong>Dual-Mode Storage:</strong> Automatically backed by Cloudflare R2 or secure local server storage.</span>
+                </li>
+                <li class="d-flex align-items-start gap-2">
+                    <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                    <span><strong>Shared Catalog:</strong> All published materials are accessible to all enrolled students.</span>
+                </li>
             </ul>
         </div>
     </div>

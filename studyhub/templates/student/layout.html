@@ -2,10 +2,10 @@
 
 {% block body %}
 <!-- Student Sub-Navbar with Navigation & Search -->
-<div class="bg-body-tertiary border-bottom py-2">
-    <div class="container-fluid px-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
-        <!-- Navigation Links -->
-        <ul class="nav nav-pills gap-1 flex-wrap">
+<div class="bg-body-tertiary border-bottom py-2 sticky-top" style="top: 56px; z-index: 1020;">
+    <div class="container-fluid px-2 px-sm-3 px-md-4 d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-2">
+        <!-- Navigation Links: Swipeable horizontal track on mobile -->
+        <ul class="nav nav-pills gap-1 flex-nowrap overflow-x-auto text-nowrap pb-1 pb-md-0 no-scrollbar flex-grow-1 align-items-center">
             <li class="nav-item">
                 <a class="nav-link rounded-pill px-3 py-1 small {% if request.endpoint == 'student.dashboard' %}active{% endif %}" href="{{ url_for('student.dashboard') }}">
                     <i class="bi bi-house-door me-1"></i> Dashboard
@@ -28,12 +28,12 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link rounded-pill px-3 py-1 small {% if request.endpoint == 'student.history' %}active{% endif %}" href="{{ url_for('student.history') }}">
-                    <i class="bi bi-clock-history me-1"></i> Reading History
+                    <i class="bi bi-clock-history me-1"></i> History
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link rounded-pill px-3 py-1 small {% if request.endpoint == 'student.notes' %}active{% endif %}" href="{{ url_for('student.notes') }}">
-                    <i class="bi bi-journal-text me-1"></i> Study Notes
+                    <i class="bi bi-journal-text me-1"></i> Notes
                 </a>
             </li>
             <li class="nav-item">
@@ -43,15 +43,15 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link rounded-pill px-3 py-1 small {% if request.endpoint == 'student.interests' %}active{% endif %}" href="{{ url_for('student.interests') }}">
-                    <i class="bi bi-compass me-1"></i> My Interests
+                    <i class="bi bi-compass me-1"></i> Interests
                 </a>
             </li>
         </ul>
 
         <!-- Search Bar within Shared Global Library -->
-        <form class="d-flex" action="{{ url_for('student.search') }}" method="GET" style="max-width: 280px; width: 100%;">
-            <div class="input-group input-group-sm">
-                <input class="form-control rounded-start-pill" type="search" name="q" placeholder="Search textbooks, notes..." value="{{ request.args.get('q', '') }}">
+        <form class="d-flex flex-shrink-0" action="{{ url_for('student.search') }}" method="GET" style="max-width: 100%; width: 100%;" class="w-md-auto">
+            <div class="input-group input-group-sm w-100" style="min-width: 200px; max-width: 280px;">
+                <input class="form-control rounded-start-pill" type="search" name="q" placeholder="Search library..." value="{{ request.args.get('q', '') }}">
                 <button class="btn btn-primary rounded-end-pill px-3" type="submit">
                     <i class="bi bi-search"></i>
                 </button>
@@ -60,7 +60,7 @@
     </div>
 </div>
 
-<div class="container-fluid px-4 py-4">
+<div class="container-fluid px-2 px-sm-3 px-md-4 py-3 py-md-4 overflow-x-hidden">
     {% block student_content %}{% endblock %}
 </div>
 {% endblock %}

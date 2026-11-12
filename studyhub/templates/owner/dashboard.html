@@ -1,74 +1,74 @@
 {% extends "owner/layout.html" %}
 
-{% block title %}Main Admin Dashboard - StudyHub V2{% endblock %}
+{% block title %}Master Platform Overview - StudyHub V2{% endblock %}
 
 {% block owner_content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-3 mb-md-4">
     <div>
-        <h3 class="fw-bold mb-1">Master Platform Overview</h3>
+        <h3 class="fw-bold mb-1 fs-4 fs-md-3">Master Platform Overview</h3>
         <p class="text-muted small mb-0">Unified global library metrics, moderation queue, and system analytics</p>
     </div>
-    <div class="d-flex gap-2">
-        <a href="{{ url_for('owner.announcements') }}" class="btn btn-outline-primary rounded-pill px-3 shadow-sm">
-            <i class="bi bi-megaphone me-1"></i> New Announcement
+    <div class="d-flex gap-2 w-100 w-md-auto justify-content-start justify-content-md-end">
+        <a href="{{ url_for('owner.announcements') }}" class="btn btn-outline-primary btn-sm rounded-pill px-3 py-1 py-md-2 shadow-xs">
+            <i class="bi bi-megaphone me-1"></i> Announcement
         </a>
-        <a href="{{ url_for('owner.admins') }}" class="btn btn-primary rounded-pill px-4 shadow-sm">
+        <a href="{{ url_for('owner.admins') }}" class="btn btn-primary btn-sm rounded-pill px-3 px-md-4 py-1 py-md-2 shadow-xs">
             <i class="bi bi-plus-lg me-1"></i> Provision Admin
         </a>
     </div>
 </div>
 
-<!-- Key Stat Cards -->
-<div class="row g-3 mb-4">
-    <div class="col-sm-6 col-xl-3">
-        <div class="card sh-card p-3 shadow-sm">
-            <div class="d-flex align-items-center gap-3">
-                <div class="sh-stat-icon bg-primary-subtle text-primary">
+<!-- Primary Stats: 2x2 Grid on Mobile, 4-in-a-row on Desktop -->
+<div class="row g-2 g-sm-3 mb-3 mb-md-4">
+    <div class="col-6 col-md-6 col-xl-3">
+        <div class="card sh-card p-2 p-sm-3 shadow-xs h-100">
+            <div class="d-flex align-items-center gap-2 gap-sm-3">
+                <div class="sh-stat-icon bg-primary-subtle text-primary flex-shrink-0">
                     <i class="bi bi-person-badge"></i>
                 </div>
-                <div>
-                    <span class="text-muted small">Administrators</span>
-                    <h3 class="fw-bold mb-0">{{ stats.total_admins }}</h3>
+                <div class="min-w-0">
+                    <span class="text-muted small text-truncate d-block" style="font-size: 0.8rem;">Administrators</span>
+                    <h3 class="fw-bold mb-0 fs-4 fs-md-3">{{ stats.total_admins }}</h3>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-xl-3">
-        <div class="card sh-card p-3 shadow-sm">
-            <div class="d-flex align-items-center gap-3">
-                <div class="sh-stat-icon bg-success-subtle text-success">
+    <div class="col-6 col-md-6 col-xl-3">
+        <div class="card sh-card p-2 p-sm-3 shadow-xs h-100">
+            <div class="d-flex align-items-center gap-2 gap-sm-3">
+                <div class="sh-stat-icon bg-success-subtle text-success flex-shrink-0">
                     <i class="bi bi-people"></i>
                 </div>
-                <div>
-                    <span class="text-muted small">Active Users / Students</span>
-                    <h3 class="fw-bold mb-0">{{ stats.total_users }}</h3>
+                <div class="min-w-0">
+                    <span class="text-muted small text-truncate d-block" style="font-size: 0.8rem;">Active Users</span>
+                    <h3 class="fw-bold mb-0 fs-4 fs-md-3">{{ stats.total_users }}</h3>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-xl-3">
-        <div class="card sh-card p-3 shadow-sm">
-            <div class="d-flex align-items-center gap-3">
-                <div class="sh-stat-icon bg-info-subtle text-info">
+    <div class="col-6 col-md-6 col-xl-3">
+        <div class="card sh-card p-2 p-sm-3 shadow-xs h-100">
+            <div class="d-flex align-items-center gap-2 gap-sm-3">
+                <div class="sh-stat-icon bg-info-subtle text-info flex-shrink-0">
                     <i class="bi bi-file-earmark-pdf"></i>
                 </div>
-                <div>
-                    <span class="text-muted small">Shared PDF Materials</span>
-                    <h3 class="fw-bold mb-0">{{ stats.total_pdfs }}</h3>
+                <div class="min-w-0">
+                    <span class="text-muted small text-truncate d-block" style="font-size: 0.8rem;">Shared PDFs</span>
+                    <h3 class="fw-bold mb-0 fs-4 fs-md-3">{{ stats.total_pdfs }}</h3>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-sm-6 col-xl-3">
-        <div class="card sh-card p-3 shadow-sm">
-            <div class="d-flex align-items-center gap-3">
-                <div class="sh-stat-icon bg-warning-subtle text-warning">
+    <div class="col-6 col-md-6 col-xl-3">
+        <div class="card sh-card p-2 p-sm-3 shadow-xs h-100">
+            <div class="d-flex align-items-center gap-2 gap-sm-3">
+                <div class="sh-stat-icon bg-warning-subtle text-warning flex-shrink-0">
                     <i class="bi bi-cloud-arrow-up"></i>
                 </div>
-                <div>
-                    <span class="text-muted small">Storage Utilized</span>
-                    <h3 class="fw-bold mb-0">{{ stats.total_storage_mb }} MB</h3>
-                    <small class="text-muted">({{ stats.total_storage_gb }} / 9.00 GB limit)</small>
+                <div class="min-w-0">
+                    <span class="text-muted small text-truncate d-block" style="font-size: 0.8rem;">Storage Used</span>
+                    <h3 class="fw-bold mb-0 fs-5 fs-md-4">{{ stats.total_storage_mb }} MB</h3>
+                    <small class="text-muted text-truncate d-block" style="font-size: 0.7rem;">/ 9.00 GB</small>
                 </div>
             </div>
         </div>
@@ -76,53 +76,38 @@
 </div>
 
 <!-- Secondary Stats Row -->
-<div class="row g-3 mb-4">
-    <div class="col-md-4">
-        <div class="card sh-card p-3 shadow-sm">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="text-muted small">Shared Subjects</span>
-                    <h4 class="fw-bold mb-0">{{ stats.total_subjects }}</h4>
-                </div>
-                <div class="text-muted fs-3"><i class="bi bi-journal-bookmark"></i></div>
-            </div>
+<div class="row g-2 g-sm-3 mb-3 mb-md-4">
+    <div class="col-4 col-md-4">
+        <div class="card sh-card p-2 p-sm-3 shadow-xs text-center text-sm-start">
+            <span class="text-muted small d-block" style="font-size: 0.75rem;">Subjects</span>
+            <h4 class="fw-bold mb-0 fs-5 fs-md-4">{{ stats.total_subjects }}</h4>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card sh-card p-3 shadow-sm">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="text-muted small">Subject Titles</span>
-                    <h4 class="fw-bold mb-0">{{ stats.total_titles }}</h4>
-                </div>
-                <div class="text-muted fs-3"><i class="bi bi-collection"></i></div>
-            </div>
+    <div class="col-4 col-md-4">
+        <div class="card sh-card p-2 p-sm-3 shadow-xs text-center text-sm-start">
+            <span class="text-muted small d-block" style="font-size: 0.75rem;">Playlists</span>
+            <h4 class="fw-bold mb-0 fs-5 fs-md-4">{{ stats.total_titles }}</h4>
         </div>
     </div>
-    <div class="col-md-4">
-        <div class="card sh-card p-3 shadow-sm">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="text-muted small">Total Material Downloads</span>
-                    <h4 class="fw-bold mb-0">{{ stats.total_downloads }}</h4>
-                </div>
-                <div class="text-muted fs-3"><i class="bi bi-download"></i></div>
-            </div>
+    <div class="col-4 col-md-4">
+        <div class="card sh-card p-2 p-sm-3 shadow-xs text-center text-sm-start">
+            <span class="text-muted small d-block" style="font-size: 0.75rem;">Downloads</span>
+            <h4 class="fw-bold mb-0 fs-5 fs-md-4">{{ stats.total_downloads }}</h4>
         </div>
     </div>
 </div>
 
-<div class="row g-4">
+<div class="row g-3 g-md-4">
     <!-- Pending Moderation Reports -->
-    <div class="col-lg-6">
-        <div class="card sh-card shadow-sm p-3 h-100">
+    <div class="col-12 col-lg-6">
+        <div class="card sh-card shadow-xs p-3 h-100">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0">Pending Content Reports</h5>
+                <h5 class="fw-bold mb-0 fs-6 fs-md-5">Pending Content Reports</h5>
                 <a href="{{ url_for('owner.moderation') }}" class="small text-decoration-none">Open Queue</a>
             </div>
             {% if recent_reports %}
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
+                    <table class="table table-hover align-middle mb-0 text-nowrap">
                         <thead class="table-light">
                             <tr>
                                 <th>Target PDF</th>
@@ -134,13 +119,13 @@
                         <tbody>
                             {% for r in recent_reports %}
                             <tr>
-                                <td class="fw-semibold text-truncate" style="max-width: 180px;">
+                                <td class="fw-semibold text-truncate" style="max-width: 160px;">
                                     {{ r.pdf_material.title if r.pdf_material else 'Unknown' }}
                                 </td>
                                 <td><span class="badge bg-warning text-dark">{{ r.category | replace('_', ' ') | title }}</span></td>
-                                <td class="small text-muted">{{ r.created_at.strftime('%b %d, %H:%M') }}</td>
+                                <td class="small text-muted">{{ r.created_at.strftime('%b %d') }}</td>
                                 <td>
-                                    <a href="{{ url_for('owner.moderation') }}" class="btn btn-sm btn-outline-primary py-0">Review</a>
+                                    <a href="{{ url_for('owner.moderation') }}" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill">Review</a>
                                 </td>
                             </tr>
                             {% endfor %}
@@ -157,24 +142,24 @@
     </div>
 
     <!-- Active Platform Announcements -->
-    <div class="col-lg-6">
-        <div class="card sh-card shadow-sm p-3 h-100">
+    <div class="col-12 col-lg-6">
+        <div class="card sh-card shadow-xs p-3 h-100">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="fw-bold mb-0">Platform Announcements</h5>
+                <h5 class="fw-bold mb-0 fs-6 fs-md-5">Platform Announcements</h5>
                 <a href="{{ url_for('owner.announcements') }}" class="small text-decoration-none">Manage</a>
             </div>
             {% if announcements %}
                 <div class="list-group list-group-flush">
                     {% for a in announcements %}
-                    <div class="list-group-item px-0">
+                    <div class="list-group-item px-0 py-2">
                         <div class="d-flex w-100 justify-content-between">
-                            <h6 class="mb-1 fw-bold">
+                            <h6 class="mb-1 fw-bold small text-truncate">
                                 {% if a.is_pinned %}<i class="bi bi-pin-angle-fill text-danger me-1"></i>{% endif %}
                                 {{ a.title }}
                             </h6>
-                            <small class="text-muted">{{ a.created_at.strftime('%b %d') }}</small>
+                            <small class="text-muted flex-shrink-0 ms-2">{{ a.created_at.strftime('%b %d') }}</small>
                         </div>
-                        <p class="mb-1 text-muted small text-truncate">{{ a.content }}</p>
+                        <p class="mb-1 text-muted small text-truncate" style="font-size: 0.8rem;">{{ a.content }}</p>
                     </div>
                     {% endfor %}
                 </div>
@@ -189,13 +174,13 @@
 </div>
 
 <!-- Platform Activity Audit Log -->
-<div class="card sh-card shadow-sm p-3 mt-4">
+<div class="card sh-card shadow-xs p-3 mt-3 mt-md-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="fw-bold mb-0">Recent Platform Audit Trail</h5>
+        <h5 class="fw-bold mb-0 fs-6 fs-md-5">Recent Platform Audit Trail</h5>
         <a href="{{ url_for('owner.audit_logs') }}" class="small text-decoration-none">Full Audit Log</a>
     </div>
     <div class="table-responsive">
-        <table class="table table-sm table-hover align-middle mb-0">
+        <table class="table table-sm table-hover align-middle mb-0 text-nowrap">
             <thead class="table-light">
                 <tr>
                     <th>Timestamp</th>
@@ -203,22 +188,20 @@
                     <th>Action</th>
                     <th>Target</th>
                     <th>Description</th>
-                    <th>IP Address</th>
                 </tr>
             </thead>
             <tbody>
                 {% for log in recent_logs %}
                 <tr>
-                    <td class="small text-muted">{{ log.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td class="small text-muted">{{ log.created_at.strftime('%b %d %H:%M') }}</td>
                     <td><span class="badge bg-secondary">{{ log.actor.username if log.actor else 'System' }}</span></td>
                     <td><code>{{ log.action }}</code></td>
                     <td class="small">{{ log.target_type }} #{{ log.target_id[:8] if log.target_id else '-' }}</td>
-                    <td class="small">{{ log.description }}</td>
-                    <td class="small text-muted">{{ log.ip_address or '-' }}</td>
+                    <td class="small text-truncate" style="max-width: 250px;">{{ log.description }}</td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="6" class="text-center text-muted py-3">No audit events recorded yet.</td>
+                    <td colspan="5" class="text-center text-muted py-3 small">No audit events recorded yet.</td>
                 </tr>
                 {% endfor %}
             </tbody>

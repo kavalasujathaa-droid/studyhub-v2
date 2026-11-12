@@ -124,12 +124,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const { upload_url, storage_key } = presignedData;
 
-                // Step 2: Upload directly to Cloudflare R2
-                progressStatus.textContent = "Step 2/3: Uploading PDF to private storage...";
+                // Step 2: Upload directly to Cloudflare R2 or local storage
+                progressStatus.textContent = "Step 2/3: Uploading PDF to storage...";
                 await new Promise((resolve, reject) => {
                     const xhr = new XMLHttpRequest();
                     xhr.open("PUT", upload_url, true);
                     xhr.setRequestHeader("Content-Type", "application/pdf");
+                    if (upload_url.startsWith("/")) {
+                        xhr.setRequestHeader("X-CSRFToken", window.getCSRFToken());
+                    }
 
                     xhr.upload.onprogress = (ev) => {
                         if (ev.lengthComputable) {
