@@ -1,120 +1,118 @@
 {% extends "admin/layout.html" %}
 
-{% block title %}Manage Students - StudyHub V2{% endblock %}
+{% block title %}Student Accounts - StudyHub V2{% endblock %}
 
 {% block admin_content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<!-- Page Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
     <div>
-        <h3 class="fw-bold mb-1">Student Accounts</h3>
-        <p class="text-muted small mb-0">Enroll and manage student access for your institution. You can only view and edit students you created.</p>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h3 class="fw-bold mb-0">Student Accounts</h3>
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3">{{ students|length }} Enrolled</span>
+        </div>
+        <p class="text-muted small mb-0">Enroll and manage verified student access for your institution.</p>
     </div>
-    <div class="d-flex gap-2">
-        <a href="{{ url_for('admin.download_csv_template') }}" class="btn btn-outline-secondary rounded-pill px-3 shadow-sm">
-            <i class="bi bi-file-earmark-arrow-down me-1"></i> CSV Template
+    <div class="d-flex flex-wrap gap-2 w-100 w-md-auto justify-content-start justify-content-md-end">
+        <a href="{{ url_for('admin.download_csv_template') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2">
+            <i class="bi bi-download me-1"></i> Template
         </a>
-        <button class="btn btn-outline-primary rounded-pill px-3 shadow-sm" data-bs-toggle="modal" data-bs-target="#bulkUploadModal">
-            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Bulk CSV Import
+        <button class="btn btn-outline-primary btn-sm rounded-pill px-3 py-2" data-bs-toggle="modal" data-bs-target="#bulkUploadModal">
+            <i class="bi bi-file-earmark-spreadsheet me-1"></i> Bulk CSV
         </button>
-        <button class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#createStudentModal">
+        <button class="btn btn-primary btn-sm rounded-pill px-4 py-2 shadow-xs" data-bs-toggle="modal" data-bs-target="#createStudentModal">
             <i class="bi bi-person-plus-fill me-1"></i> Enroll Student
         </button>
     </div>
 </div>
 
-<!-- Search Filter -->
-<div class="card sh-card shadow-sm p-3 mb-4">
-    <form method="GET" action="{{ url_for('admin.students') }}" class="row g-2">
-        <div class="col-md-9">
-            <div class="input-group">
-                <span class="input-group-text"><i class="bi bi-search"></i></span>
-                <input type="text" name="q" class="form-control" placeholder="Search by student name, username or email..." value="{{ search_query or '' }}">
+<!-- Search Filter Bar -->
+<div class="card sh-card p-2 p-sm-3 mb-4">
+    <form method="GET" action="{{ url_for('admin.students') }}" class="row g-2 align-items-center">
+        <div class="col-12 col-md-9">
+            <div class="position-relative">
+                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                <input type="text" name="q" class="form-control rounded-pill ps-5" placeholder="Search by student name, username, or email..." value="{{ search_query or '' }}">
             </div>
         </div>
-        <div class="col-md-3 d-flex gap-2">
-            <button type="submit" class="btn btn-primary w-100">Search</button>
+        <div class="col-12 col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary w-100 rounded-pill">Search</button>
             {% if search_query %}
-                <a href="{{ url_for('admin.students') }}" class="btn btn-outline-secondary">Reset</a>
+                <a href="{{ url_for('admin.students') }}" class="btn btn-outline-secondary rounded-pill">Clear</a>
             {% endif %}
         </div>
     </form>
 </div>
 
-<!-- Students Table -->
-<div class="card sh-card shadow-sm p-3">
+<!-- Students Display: Desktop Table View (Hidden on mobile) -->
+<div class="card sh-card p-0 d-none d-lg-block overflow-hidden mb-4">
     <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
             <thead class="table-light">
                 <tr>
-                    <th>Student Name</th>
+                    <th class="ps-4">Student</th>
                     <th>Username</th>
                     <th>Email</th>
                     <th>Status</th>
-                    <th>Enrolled Date</th>
-                    <th>Last Login</th>
-                    <th>Actions</th>
+                    <th>Enrolled</th>
+                    <th>Last Active</th>
+                    <th class="text-end pe-4">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for s in students %}
                 <tr>
-                    <td class="fw-semibold">{{ s.full_name }}</td>
-                    <td><code>{{ s.username }}</code></td>
-                    <td>{{ s.email }}</td>
-                    <td>
-                        <span class="badge {% if s.is_active %}bg-success{% else %}bg-danger{% endif %}">
-                            {{ 'Active' if s.is_active else 'Deactivated' }}
-                        </span>
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-xs flex-shrink-0" style="width: 38px; height: 38px; font-size: 0.85rem; background: var(--sh-primary-gradient);">
+                                {{ s.username[:2].upper() }}
+                            </div>
+                            <div>
+                                <div class="fw-bold">{{ s.full_name }}</div>
+                                <div class="text-muted small">ID: {{ s.id[:8] }}</div>
+                            </div>
+                        </div>
                     </td>
-                    <td class="small text-muted">{{ s.created_at.strftime('%Y-%m-%d') }}</td>
-                    <td class="small text-muted">{{ s.last_login.strftime('%Y-%m-%d %H:%M') if s.last_login else 'Never' }}</td>
+                    <td><code class="text-primary fw-semibold">@{{ s.username }}</code></td>
+                    <td class="small">{{ s.email }}</td>
                     <td>
-                        <div class="d-flex gap-2">
-                            <!-- Reset Password Button -->
-                            <button class="btn btn-sm btn-outline-secondary rounded-pill" data-bs-toggle="modal" data-bs-target="#resetStudentPasswordModal{{ s.id }}">
-                                <i class="bi bi-key"></i> Reset
+                        {% if s.is_active %}
+                            <span class="sh-badge sh-badge-active">
+                                <span class="sh-badge-dot"></span> Active
+                            </span>
+                        {% else %}
+                            <span class="sh-badge sh-badge-inactive">
+                                <span class="sh-badge-dot"></span> Deactivated
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td class="small text-muted">{{ s.created_at.strftime('%b %d, %Y') }}</td>
+                    <td class="small text-muted">{{ s.last_login.strftime('%b %d, %H:%M') if s.last_login else 'Never' }}</td>
+                    <td class="text-end pe-4">
+                        <div class="d-inline-flex gap-2">
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 py-1" data-bs-toggle="modal" data-bs-target="#resetStudentPasswordModal{{ s.id }}">
+                                <i class="bi bi-key me-1"></i> Reset
                             </button>
-
-                            <!-- Toggle Status Form -->
-                            <form method="POST" action="{{ url_for('admin.toggle_student_status', student_id=s.id) }}" class="d-inline">
+                            <form method="POST" action="{{ url_for('admin.toggle_student_status', student_id=s.id) }}" class="d-inline m-0">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-sm {% if s.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %} rounded-pill" onclick="return confirm('Change status for this student?')">
+                                <input type="hidden" name="is_active" value="{{ '0' if s.is_active else '1' }}">
+                                <button type="submit" class="btn btn-sm {% if s.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %} rounded-pill px-3 py-1" onclick="return confirm('Change account status for {{ s.username }}?')">
                                     {{ 'Deactivate' if s.is_active else 'Activate' }}
                                 </button>
                             </form>
-                        </div>
-
-                        <!-- Reset Password Modal -->
-                        <div class="modal fade" id="resetStudentPasswordModal{{ s.id }}" tabindex="-1">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
-                                    <form method="POST" action="{{ url_for('admin.reset_student_password', student_id=s.id) }}">
-                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Reset Password: {{ s.username }}</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <p class="small text-muted">Assign a new password for {{ s.full_name }}. They will be asked to change it upon signing in.</p>
-                                            <div class="mb-3">
-                                                <label class="form-label small fw-semibold">New Password (min 8 chars)</label>
-                                                <input type="password" name="new_password" class="form-control" required minlength="8" placeholder="At least 8 characters">
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                                            <button type="submit" class="btn btn-primary">Save New Password</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
                         </div>
                     </td>
                 </tr>
                 {% else %}
                 <tr>
                     <td colspan="7" class="text-center py-5 text-muted">
-                        <i class="bi bi-people fs-2 text-secondary"></i>
-                        <p class="mt-2 mb-0">No students enrolled by you yet.</p>
+                        <div class="sh-dropzone-icon mx-auto mb-2" style="width: 52px; height: 52px; font-size: 1.5rem;">
+                            <i class="bi bi-people"></i>
+                        </div>
+                        <h6 class="fw-bold mb-1">No Students Enrolled Yet</h6>
+                        <p class="small text-muted mb-3">Begin by enrolling your students individually or via bulk CSV import.</p>
+                        <button class="btn btn-primary btn-sm rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#createStudentModal">
+                            <i class="bi bi-person-plus-fill me-1"></i> Enroll First Student
+                        </button>
                     </td>
                 </tr>
                 {% endfor %}
@@ -123,39 +121,130 @@
     </div>
 </div>
 
+<!-- Students Display: Mobile Responsive Card Grid (Visible on mobile/tablet) -->
+<div class="d-lg-none d-flex flex-column gap-3 mb-4">
+    {% for s in students %}
+    <div class="card sh-card p-3">
+        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+            <div class="d-flex align-items-center gap-2">
+                <div class="rounded-circle text-white d-flex align-items-center justify-content-center fw-bold shadow-xs flex-shrink-0" style="width: 40px; height: 40px; font-size: 0.9rem; background: var(--sh-primary-gradient);">
+                    {{ s.username[:2].upper() }}
+                </div>
+                <div>
+                    <h6 class="fw-bold mb-0 text-truncate" style="max-width: 170px;">{{ s.full_name }}</h6>
+                    <span class="text-muted small">@{{ s.username }}</span>
+                </div>
+            </div>
+            {% if s.is_active %}
+                <span class="sh-badge sh-badge-active">
+                    <span class="sh-badge-dot"></span> Active
+                </span>
+            {% else %}
+                <span class="sh-badge sh-badge-inactive">
+                    <span class="sh-badge-dot"></span> Inactive
+                </span>
+            {% endif %}
+        </div>
+
+        <div class="small text-muted mb-3">
+            <div class="text-truncate mb-1"><i class="bi bi-envelope me-1"></i> {{ s.email }}</div>
+            <div><i class="bi bi-calendar3 me-1"></i> Joined: {{ s.created_at.strftime('%b %d, %Y') }}</div>
+        </div>
+
+        <div class="d-flex gap-2 border-top pt-2">
+            <button class="btn btn-sm btn-outline-secondary w-50 rounded-pill py-2" data-bs-toggle="modal" data-bs-target="#resetStudentPasswordModal{{ s.id }}">
+                <i class="bi bi-key me-1"></i> Password
+            </button>
+            <form method="POST" action="{{ url_for('admin.toggle_student_status', student_id=s.id) }}" class="w-50 m-0">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="is_active" value="{{ '0' if s.is_active else '1' }}">
+                <button type="submit" class="btn btn-sm {% if s.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %} w-100 rounded-pill py-2" onclick="return confirm('Change account status for {{ s.username }}?')">
+                    {{ 'Deactivate' if s.is_active else 'Activate' }}
+                </button>
+            </form>
+        </div>
+    </div>
+    {% else %}
+    <div class="card sh-card p-4 text-center text-muted">
+        <i class="bi bi-people fs-2 text-secondary mb-2"></i>
+        <h6 class="fw-bold mb-1">No Students Found</h6>
+        <p class="small text-muted mb-3">No students have been enrolled by you yet.</p>
+        <button class="btn btn-primary btn-sm rounded-pill px-4 mx-auto" data-bs-toggle="modal" data-bs-target="#createStudentModal">
+            <i class="bi bi-person-plus-fill me-1"></i> Enroll Student
+        </button>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Password Reset Modals (For each student) -->
+{% for s in students %}
+<div class="modal fade" id="resetStudentPasswordModal{{ s.id }}" tabindex="-1" aria-labelledby="resetModalLabel{{ s.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('admin.reset_student_password', student_id=s.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="modal-header">
+                    <h5 class="modal-title fw-bold" id="resetModalLabel{{ s.id }}">Reset Student Password</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted mb-3">Assign a secure new password for <strong>{{ s.full_name }}</strong> (<code>@{{ s.username }}</code>). They will be prompted to update it on next sign in.</p>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold">New Password (minimum 8 characters)</label>
+                        <input type="password" name="new_password" class="form-control rounded-3" required minlength="8" placeholder="e.g. TempSecurePass123!">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
 <!-- Enroll Student Modal -->
-<div class="modal fade" id="createStudentModal" tabindex="-1">
-    <div class="modal-dialog">
+<div class="modal fade" id="createStudentModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form method="POST" action="{{ url_for('admin.students') }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold">Enroll Single Student</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="sh-stat-icon sh-icon-indigo" style="width: 36px; height: 36px; font-size: 1.1rem;">
+                            <i class="bi bi-person-plus-fill"></i>
+                        </div>
+                        <h5 class="modal-title fw-bold" id="createModalLabel">Enroll Student</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label small fw-semibold">Full Name</label>
-                        <input type="text" name="full_name" class="form-control" placeholder="e.g. Alex Johnson" required>
+                        <input type="text" name="full_name" class="form-control rounded-3" placeholder="e.g. Alex Johnson" required>
                     </div>
                     <div class="row g-2 mb-3">
-                        <div class="col-6">
+                        <div class="col-12 col-sm-6">
                             <label class="form-label small fw-semibold">Username</label>
-                            <input type="text" name="username" class="form-control" placeholder="alexj" required>
+                            <input type="text" name="username" class="form-control rounded-3" placeholder="alexj" required minlength="3">
                         </div>
-                        <div class="col-6">
+                        <div class="col-12 col-sm-6">
                             <label class="form-label small fw-semibold">Email Address</label>
-                            <input type="email" name="email" class="form-control" placeholder="alex@college.edu" required>
+                            <input type="email" name="email" class="form-control rounded-3" placeholder="alex@college.edu" required>
                         </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Temporary Password</label>
-                        <input type="password" name="password" class="form-control" placeholder="Minimum 8 characters" minlength="8" required>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold">Initial Password (minimum 8 characters)</label>
+                        <input type="password" name="password" id="studentNewPwd" class="form-control rounded-3" placeholder="At least 8 characters" minlength="8" required>
                     </div>
+                    <button type="button" class="btn btn-link btn-sm text-decoration-none p-0 mb-2" onclick="generateRandomStudentPassword()">
+                        <i class="bi bi-magic me-1"></i> Generate Strong Password
+                    </button>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Create Student Account</button>
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Enroll Student Account</button>
                 </div>
             </form>
         </div>
@@ -163,31 +252,52 @@
 </div>
 
 <!-- Bulk CSV Upload Modal -->
-<div class="modal fade" id="bulkUploadModal" tabindex="-1">
-    <div class="modal-dialog">
+<div class="modal fade" id="bulkUploadModal" tabindex="-1" aria-labelledby="bulkModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form method="POST" action="{{ url_for('admin.import_students_csv') }}" enctype="multipart/form-data">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="modal-header">
-                    <h5 class="modal-title fw-bold">Bulk CSV Student Onboarding</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="sh-stat-icon sh-icon-sky" style="width: 36px; height: 36px; font-size: 1.1rem;">
+                            <i class="bi bi-file-earmark-spreadsheet-fill"></i>
+                        </div>
+                        <h5 class="modal-title fw-bold" id="bulkModalLabel">Bulk CSV Onboarding</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="small text-muted">Upload a <code>.csv</code> file containing columns: <code>full_name</code>, <code>username</code>, <code>email</code>, <code>password</code>.</p>
+                    <p class="small text-muted mb-3">Upload a <code>.csv</code> spreadsheet with columns: <code>full_name</code>, <code>username</code>, <code>email</code>, <code>password</code>.</p>
                     <div class="mb-3">
-                        <label class="form-label small fw-semibold">Select CSV File</label>
-                        <input type="file" name="csv_file" accept=".csv" class="form-control" required>
+                        <label class="form-label small fw-semibold">Select CSV Spreadsheet</label>
+                        <input type="file" name="csv_file" accept=".csv" class="form-control rounded-3" required>
                     </div>
-                    <div class="alert alert-info small py-2">
-                        <i class="bi bi-info-circle me-1"></i> Don't have the format? <a href="{{ url_for('admin.download_csv_template') }}" class="alert-link">Download sample CSV template</a>.
+                    <div class="alert alert-info small py-2 d-flex align-items-center gap-2 rounded-3">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <div>Need the template? <a href="{{ url_for('admin.download_csv_template') }}" class="alert-link">Download Sample CSV</a>.</div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Process Import</button>
+                    <button type="button" class="btn btn-secondary rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4">Import Students</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
+
+<script>
+function generateRandomStudentPassword() {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789!@#$%";
+    let pwd = "";
+    for (let i = 0; i < 12; i++) {
+        pwd += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    const input = document.getElementById("studentNewPwd");
+    if (input) {
+        input.value = pwd;
+        input.type = "text";
+    }
+}
+</script>
 {% endblock %}

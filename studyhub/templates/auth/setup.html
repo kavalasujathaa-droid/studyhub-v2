@@ -1,67 +1,65 @@
 {% extends "base.html" %}
 
-{% block title %}First-Time Platform Owner Setup - StudyHub V2{% endblock %}
+{% block title %}Platform Owner Setup - StudyHub V2{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-7 col-lg-6">
-            <div class="card sh-card shadow-lg p-4 border-primary">
-                <div class="text-center mb-4">
-                    <div class="sh-stat-icon bg-warning text-dark mx-auto mb-3 shadow">
-                        <i class="bi bi-shield-lock-fill fs-3"></i>
-                    </div>
-                    <h3 class="fw-bold">Platform Owner Setup</h3>
-                    <p class="text-muted small">Initial installation and system bootstrap for StudyHub V2</p>
-                    <div class="alert alert-warning py-2 small text-start">
-                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                        This one-time bootstrap procedure initializes the root Platform Owner. Enter the bootstrap token configured in your deployment environment.
+<div class="container py-5 d-flex align-items-center justify-content-center" style="min-height: 85vh;">
+    <div class="w-100" style="max-width: 540px;">
+        <div class="card sh-card p-4 p-sm-5 shadow-lg border">
+            <div class="text-center mb-4">
+                <div class="sh-stat-icon sh-icon-indigo mx-auto mb-3" style="width: 52px; height: 52px; font-size: 1.6rem; border-radius: 14px;">
+                    <i class="bi bi-shield-lock-fill"></i>
+                </div>
+                <h3 class="fw-bold mb-1">Platform Setup</h3>
+                <p class="text-muted small mb-3">Initialize Root Main Administrator for StudyHub V2</p>
+                <div class="alert alert-info py-2 px-3 small rounded-3 text-start d-flex align-items-center gap-2 mb-0">
+                    <i class="bi bi-info-circle-fill fs-6 text-primary flex-shrink-0"></i>
+                    <div>This one-time bootstrap initializes the single Platform Owner. Enter the bootstrap token configured in your environment.</div>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('auth.setup') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Bootstrap Token (OWNER_BOOTSTRAP_TOKEN)</label>
+                    <div class="position-relative">
+                        <i class="bi bi-key-fill position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                        <input type="password" name="bootstrap_token" class="form-control rounded-pill ps-5" placeholder="Enter setup token" required autofocus>
                     </div>
                 </div>
 
-                <form method="POST" action="{{ url_for('auth.setup') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Platform Owner Full Name</label>
+                    <input type="text" name="full_name" class="form-control rounded-3" placeholder="e.g. Master Administrator" required>
+                </div>
 
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Owner Bootstrap Token (OWNER_BOOTSTRAP_TOKEN)</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-key-fill"></i></span>
-                            <input type="password" name="bootstrap_token" class="form-control" placeholder="Enter setup token" required autofocus>
-                        </div>
+                <div class="row g-2 mb-3">
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label small fw-semibold">Username</label>
+                        <input type="text" name="username" class="form-control rounded-3" placeholder="root_admin" required>
                     </div>
-
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Platform Owner Full Name</label>
-                        <input type="text" name="full_name" class="form-control" placeholder="e.g. Master Administrator" required>
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label small fw-semibold">Email Address</label>
+                        <input type="email" name="email" class="form-control rounded-3" placeholder="owner@studyhub.edu" required>
                     </div>
+                </div>
 
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label small fw-semibold">Username</label>
-                            <input type="text" name="username" class="form-control" placeholder="root_admin" required>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label small fw-semibold">Email Address</label>
-                            <input type="email" name="email" class="form-control" placeholder="owner@studyhub.internal" required>
-                        </div>
+                <div class="row g-2 mb-4">
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label small fw-semibold">Master Password (min 10 chars)</label>
+                        <input type="password" name="password" class="form-control rounded-3" placeholder="••••••••••" required minlength="10">
                     </div>
-
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label small fw-semibold">Master Password (min 10 chars)</label>
-                            <input type="password" name="password" class="form-control" placeholder="••••••••••" required minlength="10">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label small fw-semibold">Confirm Password</label>
-                            <input type="password" name="confirm_password" class="form-control" placeholder="••••••••••" required minlength="10">
-                        </div>
+                    <div class="col-12 col-sm-6">
+                        <label class="form-label small fw-semibold">Confirm Password</label>
+                        <input type="password" name="confirm_password" class="form-control rounded-3" placeholder="••••••••••" required minlength="10">
                     </div>
+                </div>
 
-                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm mt-3">
-                        <i class="bi bi-check2-circle me-1"></i> Initialize Platform Owner & Lock Setup
-                    </button>
-                </form>
-            </div>
+                <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-semibold shadow-xs">
+                    <i class="bi bi-check2-circle me-1"></i> Initialize Platform Owner & Lock Setup
+                </button>
+            </form>
         </div>
     </div>
 </div>

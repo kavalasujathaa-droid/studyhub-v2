@@ -80,3 +80,23 @@ def test_bulk_csv_student_onboarding(app, setup_shared_environment):
         invalid_csv = "name,email\nNoPass,test@test.com\n"
         with pytest.raises(ValueError, match="CSV must contain columns"):
             StudentService.bulk_import_students(admin_a.id, invalid_csv)
+
+def test_admin_create_student_post_route(client, setup_shared_environment):
+    # Log in as admin_alice with correct password
+    login_res = client.post("/auth/login", data={
+        "identifier": "admin_alice",
+        "password": "PasswordAlice123!"
+    }, follow_redirects=True)
+    assert login_res.status_code == 200
+
+    # Post student creation (the exact flow that previously triggered 500)
+    res = client.post("/admin/students", data={
+        "full_name": "Grace Hopper",
+        "username": "grace_hopper",
+        "email": "grace@navy.edu",
+        "password": "CobolCompiler123!"
+    }, follow_redirects=True)
+
+    assert res.status_code == 200
+    assert b"enrolled successfully" in res.data or b"grace_hopper" in res.data
+

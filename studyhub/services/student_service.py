@@ -18,7 +18,8 @@ class StudentService:
         full_name: str,
         username: str,
         email: str,
-        password: str
+        password: str,
+        ip_address: str = None
     ) -> User:
         admin = db.session.get(User, admin_id)
         if not admin or admin.role not in ["admin", "main_admin"]:
@@ -57,7 +58,8 @@ class StudentService:
             action="student_created",
             target_type="user",
             target_id=student.id,
-            description=f"Admin {admin.username} enrolled student {clean_username}"
+            description=f"Admin {admin.username} enrolled student {clean_username}",
+            ip_address=ip_address
         )
         db.session.add(audit)
         db.session.commit()
@@ -135,7 +137,7 @@ class StudentService:
         return student
 
     @classmethod
-    def reset_student_password(cls, student_id: str, admin_user: User | str, new_password: str):
+    def reset_student_password(cls, student_id: str, admin_user: User | str, new_password: str, ip_address: str = None):
         student = cls.get_student_by_id(student_id, admin_user)
         if not student:
             raise PermissionError("Student not found or you lack permission to reset this password.")
@@ -149,13 +151,14 @@ class StudentService:
             action="student_password_reset",
             target_type="user",
             target_id=student.id,
-            description=f"Admin reset password for student: {student.username}"
+            description=f"Admin reset password for student: {student.username}",
+            ip_address=ip_address
         )
         db.session.add(audit)
         db.session.commit()
 
     @classmethod
-    def toggle_student_status(cls, student_id: str, admin_user: User | str, is_active: bool):
+    def toggle_student_status(cls, student_id: str, admin_user: User | str, is_active: bool, ip_address: str = None):
         student = cls.get_student_by_id(student_id, admin_user)
         if not student:
             raise PermissionError("Student not found or you lack permission to alter this account.")
@@ -169,7 +172,8 @@ class StudentService:
             action=action_name,
             target_type="user",
             target_id=student.id,
-            description=f"Student account {'activated' if is_active else 'deactivated'}: {student.username}"
+            description=f"Student account {'activated' if is_active else 'deactivated'}: {student.username}",
+            ip_address=ip_address
         )
         db.session.add(audit)
         db.session.commit()
@@ -193,7 +197,7 @@ class StudentService:
         return output.getvalue()
 
     @classmethod
-    def import_students_from_csv(cls, admin_id: str, csv_file_or_content) -> dict:
+    def import_students_from_csv(cls, admin_id: str, csv_file_or_content, ip_address: str = None) -> dict:
         """
         Parses CSV, validates duplicate usernames and emails,
         and provisions valid student accounts with temporary passwords.
@@ -277,13 +281,15 @@ class StudentService:
                 actor_user_id=admin_id,
                 action="students_bulk_imported",
                 target_type="user",
-                description=f"Bulk imported {success_count} student accounts via CSV"
+                description=f"Bulk imported {success_count} student accounts via CSV",
+                ip_address=ip_address
             )
             db.session.add(audit)
             db.session.commit()
 
         return {
             "created_count": success_count,
+            "success_count": success_count,
             "errors": errors,
             "created_records": created_records
         }

@@ -54,7 +54,11 @@ def students():
             )
             flash(f"Student '{student.username}' enrolled successfully!", "success")
         except ValueError as e:
+            db.session.rollback()
             flash(str(e), "danger")
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Unable to enroll student: {str(e)}", "danger")
 
         return redirect(url_for("admin.students"))
 
@@ -70,10 +74,14 @@ def reset_student_password(student_id):
         return redirect(url_for("admin.students"))
 
     try:
-        StudentService.reset_student_password(student_id, current_user, new_password)
-        flash("Student password updated.", "success")
-    except PermissionError as e:
+        StudentService.reset_student_password(student_id, current_user, new_password, ip_address=request.remote_addr)
+        flash("Student password updated successfully.", "success")
+    except (PermissionError, ValueError) as e:
+        db.session.rollback()
         flash(str(e), "danger")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Password reset failed: {str(e)}", "danger")
 
     return redirect(url_for("admin.students"))
 
@@ -82,10 +90,14 @@ def reset_student_password(student_id):
 def toggle_student_status(student_id):
     is_active = request.form.get("is_active") == "1"
     try:
-        StudentService.toggle_student_status(student_id, current_user, is_active)
+        StudentService.toggle_student_status(student_id, current_user, is_active, ip_address=request.remote_addr)
         flash("Student account status updated.", "success")
-    except PermissionError as e:
+    except (PermissionError, ValueError) as e:
+        db.session.rollback()
         flash(str(e), "danger")
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Status update failed: {str(e)}", "danger")
 
     return redirect(url_for("admin.students"))
 
@@ -114,13 +126,15 @@ def import_students_csv():
         return redirect(url_for("admin.students"))
 
     try:
-        result = StudentService.import_students_from_csv(current_user.id, file.stream)
-        if result["success_count"] > 0:
-            flash(f"Successfully imported {result['success_count']} students!", "success")
-        if result["errors"]:
+        result = StudentService.import_students_from_csv(current_user.id, file.stream, ip_address=request.remote_addr)
+        created = result.get("success_count", 0) or result.get("created_count", 0)
+        if created > 0:
+            flash(f"Successfully imported {created} students!", "success")
+        if result.get("errors"):
             error_msgs = "; ".join([f"Row {e['row']}: {e['error']}" for e in result["errors"][:5]])
             flash(f"Errors occurred in {len(result['errors'])} rows: {error_msgs}", "warning")
     except Exception as e:
+        db.session.rollback()
         flash(f"CSV import failed: {str(e)}", "danger")
 
     return redirect(url_for("admin.students"))
@@ -128,6 +142,12 @@ def import_students_csv():
 # =============================================================================
 # SHARED SUBJECTS & TITLES
 # =============================================================================
+
+def _safe_int(val, default=0):
+    try:
+        return int(val)
+    except (ValueError, TypeError):
+        return default
 
 @admin_bp.route("/subjects", methods=["GET", "POST"])
 @role_required("admin")
@@ -142,7 +162,7 @@ def subjects():
             desc = request.form.get("description", "").strip()
             icon = request.form.get("icon", "bi-journal-bookmark").strip()
             cover = request.form.get("cover_image_url", "").strip()
-            sort_order = int(request.form.get("sort_order", 0))
+            sort_order = _safe_int(request.form.get("sort_order"), 0)
             is_published = bool(request.form.get("is_published"))
             category_ids = request.form.getlist("category_ids")
 
@@ -159,7 +179,11 @@ def subjects():
                 )
                 flash(f"Subject '{name}' added to the shared library!", "success")
             except ValueError as e:
+                db.session.rollback()
                 flash(str(e), "danger")
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Unable to create subject: {str(e)}", "danger")
 
         elif action == "edit":
             subject_id = request.form.get("subject_id")
@@ -167,7 +191,7 @@ def subjects():
             desc = request.form.get("description", "").strip()
             icon = request.form.get("icon", "bi-journal-bookmark").strip()
             cover = request.form.get("cover_image_url", "").strip()
-            sort_order = int(request.form.get("sort_order", 0))
+            sort_order = _safe_int(request.form.get("sort_order"), 0)
             is_published = bool(request.form.get("is_published"))
             category_ids = request.form.getlist("category_ids")
 
@@ -185,7 +209,11 @@ def subjects():
                 )
                 flash("Subject updated.", "success")
             except (ValueError, PermissionError) as e:
+                db.session.rollback()
                 flash(str(e), "danger")
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Unable to update subject: {str(e)}", "danger")
 
         elif action == "delete":
             subject_id = request.form.get("subject_id")
@@ -193,7 +221,11 @@ def subjects():
                 ContentService.delete_subject(subject_id, current_user, soft=True)
                 flash("Subject archived.", "info")
             except (ValueError, PermissionError) as e:
+                db.session.rollback()
                 flash(str(e), "danger")
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Unable to delete subject: {str(e)}", "danger")
 
         return redirect(url_for("admin.subjects"))
 
@@ -214,7 +246,7 @@ def titles(subject_id):
         if action == "create":
             title_name = request.form.get("title_name", "").strip()
             desc = request.form.get("description", "").strip()
-            sort_order = int(request.form.get("sort_order", 0))
+            sort_order = _safe_int(request.form.get("sort_order"), 0)
             is_published = bool(request.form.get("is_published"))
 
             try:
@@ -228,13 +260,17 @@ def titles(subject_id):
                 )
                 flash(f"Title '{title_name}' added to {subject.subject_name}!", "success")
             except ValueError as e:
+                db.session.rollback()
                 flash(str(e), "danger")
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Unable to create title: {str(e)}", "danger")
 
         elif action == "edit":
             title_id = request.form.get("title_id")
             title_name = request.form.get("title_name", "").strip()
             desc = request.form.get("description", "").strip()
-            sort_order = int(request.form.get("sort_order", 0))
+            sort_order = _safe_int(request.form.get("sort_order"), 0)
             is_published = bool(request.form.get("is_published"))
 
             try:
@@ -248,7 +284,11 @@ def titles(subject_id):
                 )
                 flash("Title updated.", "success")
             except (ValueError, PermissionError) as e:
+                db.session.rollback()
                 flash(str(e), "danger")
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Unable to update title: {str(e)}", "danger")
 
         elif action == "delete":
             title_id = request.form.get("title_id")
@@ -256,7 +296,11 @@ def titles(subject_id):
                 ContentService.delete_title(title_id, current_user, soft=True)
                 flash("Title archived.", "info")
             except (ValueError, PermissionError) as e:
+                db.session.rollback()
                 flash(str(e), "danger")
+            except Exception as e:
+                db.session.rollback()
+                flash(f"Unable to delete title: {str(e)}", "danger")
 
         return redirect(url_for("admin.titles", subject_id=subject.id))
 

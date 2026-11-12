@@ -2,65 +2,63 @@
 
 {% block body %}
 <!-- Student Sub-Navbar with Navigation & Search -->
-<div class="bg-body-tertiary border-bottom py-2 sticky-top" style="top: 56px; z-index: 1020;">
-    <div class="container-fluid px-2 px-sm-3 px-md-4 d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-2">
+<div class="border-bottom py-2 sticky-top" style="top: 60px; z-index: 1020; background: var(--sh-surface); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);">
+    <div class="container-fluid px-3 px-md-4 d-flex flex-column flex-md-row align-items-stretch align-items-md-center justify-content-between gap-2">
         <!-- Navigation Links: Swipeable horizontal track on mobile -->
         <ul class="nav nav-pills gap-1 flex-nowrap overflow-x-auto text-nowrap pb-1 pb-md-0 no-scrollbar flex-grow-1 align-items-center">
             <li class="nav-item">
-                <a class="nav-link rounded-pill px-3 py-1 small {% if request.endpoint == 'student.dashboard' %}active{% endif %}" href="{{ url_for('student.dashboard') }}">
-                    <i class="bi bi-house-door me-1"></i> Dashboard
+                <a class="nav-link rounded-pill px-3 py-1 small fw-semibold {% if request.endpoint == 'student.dashboard' %}active{% endif %}" href="{{ url_for('student.dashboard') }}">
+                    <i class="bi bi-house-door me-1"></i> Library Home
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link rounded-pill px-3 py-1 small {% if request.endpoint == 'student.subjects_list' %}active{% endif %}" href="{{ url_for('student.subjects_list') }}">
-                    <i class="bi bi-journal-bookmark me-1"></i> Subjects
+                <a class="nav-link rounded-pill px-3 py-1 small fw-semibold {% if request.endpoint == 'student.subjects_list' %}active{% endif %}" href="{{ url_for('student.subjects_list') }}">
+                    <i class="bi bi-journal-bookmark me-1"></i> All Subjects
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link rounded-pill px-3 py-1 small {% if request.endpoint == 'student.search' %}active{% endif %}" href="{{ url_for('student.search') }}">
+                <a class="nav-link rounded-pill px-3 py-1 small fw-semibold {% if request.endpoint == 'student.search' %}active{% endif %}" href="{{ url_for('student.search') }}">
                     <i class="bi bi-search me-1"></i> Explore & Search
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link rounded-pill px-3 py-1 small {% if request.endpoint == 'student.bookmarks' %}active{% endif %}" href="{{ url_for('student.bookmarks') }}">
+                <a class="nav-link rounded-pill px-3 py-1 small fw-semibold {% if request.endpoint == 'student.bookmarks' %}active{% endif %}" href="{{ url_for('student.bookmarks') }}">
                     <i class="bi bi-bookmark-fill me-1"></i> Bookmarks
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link rounded-pill px-3 py-1 small {% if request.endpoint == 'student.history' %}active{% endif %}" href="{{ url_for('student.history') }}">
+                <a class="nav-link rounded-pill px-3 py-1 small fw-semibold {% if request.endpoint == 'student.history' %}active{% endif %}" href="{{ url_for('student.history') }}">
                     <i class="bi bi-clock-history me-1"></i> History
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link rounded-pill px-3 py-1 small {% if request.endpoint == 'student.notes' %}active{% endif %}" href="{{ url_for('student.notes') }}">
-                    <i class="bi bi-journal-text me-1"></i> Notes
+                <a class="nav-link rounded-pill px-3 py-1 small fw-semibold {% if request.endpoint == 'student.notes' %}active{% endif %}" href="{{ url_for('student.notes') }}">
+                    <i class="bi bi-journal-text me-1"></i> Study Notes
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link rounded-pill px-3 py-1 small {% if request.endpoint == 'student.downloads' %}active{% endif %}" href="{{ url_for('student.downloads') }}">
+                <a class="nav-link rounded-pill px-3 py-1 small fw-semibold {% if request.endpoint == 'student.downloads' %}active{% endif %}" href="{{ url_for('student.downloads') }}">
                     <i class="bi bi-download me-1"></i> Downloads
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link rounded-pill px-3 py-1 small {% if request.endpoint == 'student.interests' %}active{% endif %}" href="{{ url_for('student.interests') }}">
+                <a class="nav-link rounded-pill px-3 py-1 small fw-semibold {% if request.endpoint == 'student.interests' %}active{% endif %}" href="{{ url_for('student.interests') }}">
                     <i class="bi bi-compass me-1"></i> Interests
                 </a>
             </li>
         </ul>
 
         <!-- Search Bar within Shared Global Library -->
-        <form class="d-flex flex-shrink-0" action="{{ url_for('student.search') }}" method="GET" style="max-width: 100%; width: 100%;" class="w-md-auto">
-            <div class="input-group input-group-sm w-100" style="min-width: 200px; max-width: 280px;">
-                <input class="form-control rounded-start-pill" type="search" name="q" placeholder="Search library..." value="{{ request.args.get('q', '') }}">
-                <button class="btn btn-primary rounded-end-pill px-3" type="submit">
-                    <i class="bi bi-search"></i>
-                </button>
+        <form class="d-none d-md-flex flex-shrink-0" action="{{ url_for('student.search') }}" method="GET">
+            <div class="position-relative" style="width: 240px;">
+                <i class="bi bi-search position-absolute top-50 start-0 translate-middle-y ms-3 text-muted small"></i>
+                <input class="form-control form-control-sm rounded-pill ps-4" type="search" name="q" placeholder="Quick find in library..." value="{{ request.args.get('q', '') }}">
             </div>
         </form>
     </div>
 </div>
 
-<div class="container-fluid px-2 px-sm-3 px-md-4 py-3 py-md-4 overflow-x-hidden">
+<div class="container-fluid px-3 px-md-4 py-3 py-md-4">
     {% block student_content %}{% endblock %}
 </div>
 {% endblock %}

@@ -3,10 +3,10 @@
 {% block body %}
 <div class="d-flex">
     <!-- Desktop Main Administrator Sidebar -->
-    <div class="sh-sidebar p-3 d-none d-md-block shadow-sm">
-        <div class="mb-4 px-3">
-            <span class="text-uppercase small fw-bold text-muted" style="letter-spacing: 0.1em; font-size: 0.7rem;">Master Platform</span>
-            <h6 class="fw-bold text-white mt-1">Main Admin Console</h6>
+    <aside class="sh-sidebar p-3 d-none d-md-flex flex-column shadow-sm" style="background: var(--sh-sidebar-bg);">
+        <div class="mb-4 px-3 pt-2">
+            <span class="text-uppercase fw-bold" style="letter-spacing: 0.1em; font-size: 0.68rem; color: #64748b;">Master Console</span>
+            <h6 class="fw-bold text-white mt-1 mb-0">Platform Overview</h6>
         </div>
         <ul class="nav flex-column gap-1">
             <li class="nav-item">
@@ -50,28 +50,13 @@
                 </a>
             </li>
         </ul>
-        <div class="mt-auto px-3 pt-4 text-muted small border-top border-secondary-subtle">
-            <i class="bi bi-globe2 text-info me-1"></i> Unified Global Shared Library
+        <div class="mt-auto px-3 pt-3 small border-top" style="border-color: rgba(255, 255, 255, 0.08) !important; color: #64748b;">
+            <i class="bi bi-shield-check text-primary me-1"></i> Root Authority Session
         </div>
-    </div>
+    </aside>
 
     <!-- Main Workspace -->
-    <div class="flex-grow-1 p-2 p-sm-3 p-md-4 overflow-x-hidden min-vh-100">
-        <!-- Mobile Main Admin Sub-bar -->
-        <div class="d-md-none mb-3 d-flex align-items-center justify-content-between p-2 rounded-3 bg-body-tertiary border shadow-xs">
-            <button class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 d-flex align-items-center gap-1" type="button" data-bs-toggle="offcanvas" data-bs-target="#mobileAppDrawer">
-                <i class="bi bi-list"></i> Console Menu
-            </button>
-            <div class="d-flex gap-2">
-                <a href="{{ url_for('owner.admins') }}" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-1">
-                    <i class="bi bi-people"></i> Admins
-                </a>
-                <a href="{{ url_for('owner.moderation') }}" class="btn btn-sm btn-warning rounded-pill px-2 py-1 shadow-xs">
-                    <i class="bi bi-shield"></i> Queue
-                </a>
-            </div>
-        </div>
-
+    <div class="flex-grow-1 p-3 p-md-4 overflow-x-hidden min-vh-100">
         {% block owner_content %}{% endblock %}
     </div>
 </div>

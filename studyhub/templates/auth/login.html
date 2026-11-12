@@ -3,52 +3,69 @@
 {% block title %}Sign In - StudyHub V2{% endblock %}
 
 {% block body %}
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-5 col-lg-4">
-            <div class="card sh-card shadow-lg p-4">
-                <div class="text-center mb-4">
-                    <div class="sh-stat-icon bg-primary text-white mx-auto mb-3 shadow">
-                        <i class="bi bi-mortarboard-fill fs-3"></i>
+<div class="container py-5 d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+    <div class="w-100" style="max-width: 440px;">
+        <div class="card sh-card p-4 p-sm-5 shadow-lg border">
+            <div class="text-center mb-4">
+                <div class="sh-logo-mark mx-auto mb-3" style="width: 52px; height: 52px; font-size: 1.6rem; border-radius: 14px;">
+                    <i class="bi bi-mortarboard-fill"></i>
+                </div>
+                <h3 class="fw-bold mb-1">StudyHub <span class="navbar-brand-badge">V2</span></h3>
+                <p class="text-muted small">Shared Global Educational Digital Library</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('auth.login') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Username or Email</label>
+                    <div class="position-relative">
+                        <i class="bi bi-person position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                        <input type="text" name="identifier" class="form-control rounded-pill ps-5" placeholder="Username or email address" required autofocus>
                     </div>
-                    <h3 class="fw-bold">StudyHub <span class="text-primary">V2</span></h3>
-                    <p class="text-muted small">Multi-Tenant Educational Digital Library</p>
                 </div>
 
-                <form method="POST" action="{{ url_for('auth.login') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Username or Email</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-person"></i></span>
-                            <input type="text" name="identifier" class="form-control" placeholder="Enter username or email" required autofocus>
-                        </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-semibold">Password</label>
+                    <div class="position-relative">
+                        <i class="bi bi-lock position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"></i>
+                        <input type="password" name="password" id="loginPassword" class="form-control rounded-pill ps-5 pe-5" placeholder="••••••••" required>
+                        <button type="button" class="btn btn-link position-absolute top-50 end-0 translate-middle-y text-muted text-decoration-none me-2 p-0" onclick="togglePasswordVisibility('loginPassword', 'eyeIcon')">
+                            <i class="bi bi-eye" id="eyeIcon"></i>
+                        </button>
                     </div>
+                </div>
 
-                    <div class="mb-3">
-                        <label class="form-label small fw-semibold">Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                            <input type="password" name="password" class="form-control" placeholder="••••••••" required>
-                        </div>
-                    </div>
-
-                    <div class="mb-3 form-check">
+                <div class="mb-4 form-check d-flex align-items-center justify-content-between">
+                    <div>
                         <input type="checkbox" name="remember" class="form-check-input" id="rememberMe">
-                        <label class="form-check-label small" for="rememberMe">Remember me</label>
+                        <label class="form-check-label small text-muted ms-1" for="rememberMe">Remember me</label>
                     </div>
-
-                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold shadow-sm">
-                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
-                    </button>
-                </form>
-
-                <div class="text-center mt-4 border-top pt-3 text-muted small">
-                    <i class="bi bi-shield-check text-success me-1"></i> Strictly Isolated Multi-Tenant Architecture
                 </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 rounded-pill fw-semibold shadow-xs">
+                    <i class="bi bi-box-arrow-in-right me-1"></i> Sign In to Library
+                </button>
+            </form>
+
+            <div class="text-center mt-4 border-top pt-3 text-muted small">
+                <i class="bi bi-shield-lock-fill text-primary me-1"></i> Argon2id Protected Authentication
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function togglePasswordVisibility(inputId, iconId) {
+    const input = document.getElementById(inputId);
+    const icon = document.getElementById(iconId);
+    if (input.type === "password") {
+        input.type = "text";
+        icon.className = "bi bi-eye-slash";
+    } else {
+        input.type = "password";
+        icon.className = "bi bi-eye";
+    }
+}
+</script>
 {% endblock %}

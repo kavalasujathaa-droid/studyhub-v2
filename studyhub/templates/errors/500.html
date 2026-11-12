@@ -1,12 +1,23 @@
 {% extends "base.html" %}
-{% block title %}500 - Internal Server Error{% endblock %}
+{% block title %}Something Went Wrong - StudyHub V2{% endblock %}
 {% block body %}
-<div class="container py-5 text-center">
-    <div class="sh-stat-icon bg-danger text-white mx-auto mb-3" style="width: 72px; height: 72px; font-size: 2rem;">
-        <i class="bi bi-x-octagon-fill"></i>
+<div class="container py-5 d-flex align-items-center justify-content-center" style="min-height: 70vh;">
+    <div class="card sh-card border p-4 p-md-5 text-center shadow-lg" style="max-width: 520px; border-radius: 24px;">
+        <div class="sh-dropzone-icon mx-auto mb-3" style="background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%); width: 72px; height: 72px; font-size: 2rem;">
+            <i class="bi bi-shield-slash-fill"></i>
+        </div>
+        <h2 class="fw-bold mb-2">Something Went Sideways</h2>
+        <p class="text-muted small mb-4">
+            The platform encountered an unexpected hiccup. Don't worry—your data and sessions are safe. We've logged this diagnostic event for review.
+        </p>
+        <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
+            <button onclick="window.location.reload()" class="btn btn-primary rounded-pill px-4">
+                <i class="bi bi-arrow-clockwise me-1"></i> Try Again
+            </button>
+            <a href="/" class="btn btn-outline-secondary rounded-pill px-4">
+                <i class="bi bi-house-door me-1"></i> Return Home
+            </a>
+        </div>
     </div>
-    <h2 class="fw-bold">500 - Internal Server Error</h2>
-    <p class="text-muted">An unexpected server error occurred. Please contact system support.</p>
-    <a href="/" class="btn btn-primary rounded-pill px-4 mt-2">Return Home</a>
 </div>
 {% endblock %}
